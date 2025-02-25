@@ -20,16 +20,6 @@ public class PlayerController {
     @Autowired
     private PlayerService playerService;
 
-    @PostMapping
-    public ResponseEntity<PlayerDto> createPlayer(@RequestBody Player player) {
-        try {
-            return ResponseEntity.status(HttpStatus.CREATED).body(playerService.registerPlayer(player));
-        }
-        catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
-    }
-
     @GetMapping
     public ResponseEntity<Optional<PlayerDto>> findPlayerByName(@RequestParam String name) {
         try {

@@ -2,7 +2,6 @@ package com.example.chess.service;
 
 import com.example.chess.dto.PlayerDto;
 import com.example.chess.entity.Player;
-import com.example.chess.entity.PlayerStatistic;
 import com.example.chess.exception.InvalidParamException;
 import com.example.chess.exception.NotFoundException;
 import com.example.chess.repository.PlayerRepository;
@@ -71,13 +70,5 @@ public class PlayerService {
             return true;
         }
         return false;
-    }
-
-    public PlayerStatistic getPlayerStatisticByEmail(String email) throws NotFoundException {
-        Optional<Player> playerOpt = playerRepository.findByEmail(email);
-        if (playerOpt.isPresent()) {
-            return playerOpt.get().getPlayerStatistic();
-        }
-        throw new NotFoundException();
     }
 }

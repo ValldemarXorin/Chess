@@ -2,73 +2,48 @@ package com.example.chess.service;
 
 import com.example.chess.dto.PlayerDto;
 import com.example.chess.entity.Player;
-import com.example.chess.exception.InvalidParamException;
 import com.example.chess.exception.NotFoundException;
-import com.example.chess.repository.PlayerRepository;
-import com.example.chess.utils.PasswordUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
+import org.springframework.stereotype.Service;
 
 @Service
 public class PlayerService {
 
-    @Autowired
-    PlayerRepository playerRepository;
+    private final Optional<Player>[] players;
 
-    public PlayerDto registerPlayer(Player player) throws InvalidParamException {
-        if (!playerRepository.existsByEmail(player.getEmail())) {
-            throw new InvalidParamException();
-        }
-        player.setHashPassword(PasswordUtil.encode(player.getHashPassword()));
-        playerRepository.save(player);
-        return new PlayerDto(player);
+    public PlayerService() {
+        players = new Optional[3];
+        players[0] = Optional.of(new Player(1, "vova3089927@gmail.com", "12345678", "Valldemar"));
+        players[1] = Optional.of(new Player(2, "pAlAdin11@email.com", "87654321", "MateMaster"));
+        players[2] = Optional.of(new Player(3, "octopus34error@email.com", "18273645", "Octopus"));
     }
 
     public PlayerDto getPlayerByEmail(String email) throws NotFoundException {
-        Optional<Player> playerOpt = playerRepository.findByEmail(email);
-        if (playerOpt.isPresent()) {
-            return new PlayerDto(playerOpt.get());
+        for (Optional<Player> optionalPlayer : players) {
+            if (optionalPlayer.isPresent() && optionalPlayer.get().getEmail().equals(email)) {
+                return new PlayerDto(optionalPlayer.get());
+            }
         }
         throw new NotFoundException();
     }
 
     public Optional<PlayerDto> getPlayerByName(String name) throws NotFoundException {
-        Optional<Player> playerOpt = playerRepository.findByName(name);
-        if (playerOpt.isPresent()) {
-            return playerOpt.map(PlayerDto::new);
+        for (Optional<Player> optionalPlayer : players) {
+            if (optionalPlayer.isPresent() && optionalPlayer.get().getName().equals(name)) {
+                return Optional.of(new PlayerDto(optionalPlayer.get()));
+            }
         }
         throw new NotFoundException();
-    }
-
-    public List<PlayerDto> getAllPlayers() {
-        return playerRepository.findAll().stream().map(PlayerDto::new).collect(Collectors.toList());
     }
 
     public PlayerDto getPlayerByNameAndEmail(String name, String email) throws NotFoundException {
-        Optional<Player> playerOpt = playerRepository.findByEmailAndName(name, email);
-        if (playerOpt.isPresent()) {
-            return new PlayerDto(playerOpt.get());
+        for (Optional<Player> optionalPlayer : players) {
+            if (optionalPlayer.isPresent()
+                    && optionalPlayer.get().getName().equals(name)
+                    && optionalPlayer.get().getEmail().equals(email)) {
+                return new PlayerDto(optionalPlayer.get());
+            }
         }
         throw new NotFoundException();
-    }
-
-    public PlayerDto removePlayerByEmail(String email) throws NotFoundException {
-        Optional<Player> playerOpt = playerRepository.findByEmail(email);
-        if (playerOpt.isPresent()) {
-            return new PlayerDto(playerRepository.removeByEmail(email));
-        }
-        throw new NotFoundException();
-    }
-
-    public boolean checkPlayerPassword(String email, String password) {
-        Optional<Player> playerOpt = playerRepository.findByEmail(email);
-        if (playerOpt.isPresent() && PasswordUtil.matches(password, playerOpt.get().getHashPassword())) {
-            return true;
-        }
-        return false;
     }
 }

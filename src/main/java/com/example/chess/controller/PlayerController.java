@@ -1,7 +1,9 @@
 package com.example.chess.controller;
 
 import com.example.chess.dto.PlayerDto;
+import com.example.chess.exception.NotFoundException;
 import com.example.chess.service.PlayerService;
+import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,23 +22,28 @@ public class PlayerController {
         this.playerService = playerService;
     }
 
-    @GetMapping("/{email}")
-    public ResponseEntity<PlayerDto> findPlayerByEmail(@PathVariable String email) {
+    @GetMapping("/{id}")
+    public ResponseEntity<PlayerDto> findPlayerById(@PathVariable Long id) {
         try {
-            return ResponseEntity.status(HttpStatus.OK).body(playerService.getPlayerByEmail(email));
-        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(playerService.getPlayerById(id));
+        } catch (NotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
 
     @GetMapping
-    public ResponseEntity<PlayerDto> findPlayerByEmailAndName(@RequestParam String email,
-                                                              @RequestParam String name) {
+    public ResponseEntity<List<PlayerDto>> findPlayersByNameAndEmail(@RequestParam String name,
+                                                                     @RequestParam(required
+                                                                             = false)
+                                                                     String email) {
         try {
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body(playerService.getPlayerByNameAndEmail(name, email));
-        } catch (Exception e) {
+            List<PlayerDto> playersDto = playerService.getPlayersByNameAndEmail(name, email);
+            return ResponseEntity.ok(playersDto);
+        } catch (NotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 }

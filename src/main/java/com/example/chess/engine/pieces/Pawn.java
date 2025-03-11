@@ -29,7 +29,7 @@ public class Pawn extends Piece {
         if (this.getCoordX() != endX) {
             return false;
         }
-        if (isFirstMove == true && this.getCoordY() + 2 * direction == endY
+        if (isFirstMove && this.getCoordY() + 2 * direction == endY
                 && board.getPieceAt(endX, endY) == null
                 && board.getPieceAt(endX, endY - 1 * direction) == null) {
             return true;
@@ -53,13 +53,9 @@ public class Pawn extends Piece {
         }
 
         // взятие на проходе
-        if (targetPiece instanceof Pawn && ((Pawn) targetPiece).isEnPassant()
-                && board.getPieceAt(targetPiece.getCoordX(), targetPiece.getCoordY()) == null) {
-            return true;
-        }
-
-        return false;
-
+        return targetPiece instanceof Pawn pawn &&
+                pawn.isEnPassant() &&
+                board.getPieceAt(targetPiece.getCoordX(), targetPiece.getCoordY()) == null;
     }
 
     @Override

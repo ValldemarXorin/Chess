@@ -6,6 +6,10 @@ public class PasswordUtil {
 
     private static final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
+    private PasswordUtil() {
+        throw new UnsupportedOperationException("Utility class cannot be instantiated");
+    }
+
     public static String hashPassword(String password) {
         return passwordEncoder.encode(password);
     }

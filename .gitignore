@@ -50,4 +50,4 @@ build/
 ### VS Code ###
 .vscode/
 
-.resources/
+.src/resources/

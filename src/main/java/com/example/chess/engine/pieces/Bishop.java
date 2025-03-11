@@ -43,12 +43,8 @@ public class Bishop extends Piece {
         int directionXd = targetPiece.getCoordX() - this.getCoordX() > 0 ? 1 : -1;
         int directionYd = targetPiece.getCoordY() - this.getCoordY() > 0 ? 1 : -1;
 
-        if (isLegalMove(targetPiece.getCoordX() - directionXd,
-                targetPiece.getCoordY() - directionYd, board)) {
-            return true;
-        }
-
-        return false;
+        return isLegalMove(targetPiece.getCoordX() - directionXd,
+                targetPiece.getCoordY() - directionYd, board);
     }
 
     @Override

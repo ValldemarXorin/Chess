@@ -34,10 +34,7 @@ public class Pawn extends Piece {
                 && board.getPieceAt(endX, endY - 1 * direction) == null) {
             return true;
         }
-        if (this.getCoordY() + 1 * direction == endY && board.getPieceAt(endX, endY) == null) {
-            return true;
-        }
-        return false;
+        return this.getCoordY() + 1 * direction == endY && board.getPieceAt(endX, endY) == null;
     }
 
     @Override

@@ -20,13 +20,9 @@ public class Horse extends Piece {
         int directionX = endX - this.getCoordX();
         int directionY = endY - this.getCoordY();
 
-        if (board.getPieceAt(endX, endY) == null
-                && (Math.abs(directionX) == 2 && Math.abs(directionY) == 1
-                || Math.abs(directionX) == 1 && Math.abs(directionY) == 2)) {
-            return true;
-        }
-
-        return false;
+        return board.getPieceAt(endX, endY) == null &&
+                ((Math.abs(directionX) == 2 && Math.abs(directionY) == 1) ||
+                        (Math.abs(directionX) == 1 && Math.abs(directionY) == 2));
     }
 
     @Override
@@ -38,12 +34,8 @@ public class Horse extends Piece {
         int directionX = targetPiece.getCoordX() - this.getCoordX();
         int directionY = targetPiece.getCoordY() - this.getCoordY();
 
-        if (Math.abs(directionX) == 2 && Math.abs(directionY) == 1
-                || Math.abs(directionX) == 1 && Math.abs(directionY) == 2) {
-            return true;
-        }
-
-        return false;
+        return Math.abs(directionX) == 2 && Math.abs(directionY) == 1 ||
+                Math.abs(directionX) == 1 && Math.abs(directionY) == 2;
     }
 
     @Override

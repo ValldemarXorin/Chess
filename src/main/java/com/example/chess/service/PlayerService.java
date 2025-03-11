@@ -64,7 +64,7 @@ public class PlayerService {
 
         return players.stream()
                 .map(PlayerDto::new)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public PlayerDto createPlayer(Player player) throws InvalidParamException {

@@ -12,12 +12,8 @@ public class King extends Piece {
 
     @Override
     public boolean isLegalMove(int endX, int endY, Board board) {
-        if (endX < 0 || endX >= 8 || endY < 0 || endY >= 8
-                || this.getCoordX() == endX && this.getCoordY() == endY) {
-            return false;
-        }
-
-        return true;
+        return !(endX < 0 || endX >= 8 || endY < 0 || endY >= 8 ||
+                (this.getCoordX() == endX && this.getCoordY() == endY));
     }
 
     @Override

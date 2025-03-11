@@ -41,11 +41,11 @@ public class Queen extends Piece {
 
         // проверка диагонального движения
         if (Math.abs(endX - this.getCoordX()) == Math.abs(endY - this.getCoordY())) {
-            int directionXD = endX - this.getCoordX() > 0 ? 1 : -1;
-            int directionYD = endY - this.getCoordY() > 0 ? 1 : -1;
+            int directionXd = endX - this.getCoordX() > 0 ? 1 : -1;
+            int directionYd = endY - this.getCoordY() > 0 ? 1 : -1;
 
-            for (int i = this.getCoordX() + directionXD, j = this.getCoordY() + directionYD;
-                 i != endX + directionXD; i += directionXD, j += directionYD) {
+            for (int i = this.getCoordX() + directionXd, j = this.getCoordY() + directionYd;
+                 i != endX + directionXd; i += directionXd, j += directionYd) {
                 if (board.getPieceAt(i, j) != null) {
                     return false;
                 }
@@ -63,8 +63,10 @@ public class Queen extends Piece {
             return false; // Не можем захватить пустую клетку или свою фигуру
         }
 
-        if (this.getCoordX() != targetPiece.getCoordX() && this.getCoordX() == targetPiece.getCoordY()
-                || this.getCoordX() == targetPiece.getCoordX() && this.getCoordX() != targetPiece.getCoordY()) {
+        if (this.getCoordX() != targetPiece.getCoordX()
+                && this.getCoordX() == targetPiece.getCoordY()
+                || this.getCoordX() == targetPiece.getCoordX()
+                && this.getCoordX() != targetPiece.getCoordY()) {
             int directionX = targetPiece.getCoordX() - this.getCoordX() > 0 ? 1 : -1;
             int directionY = targetPiece.getCoordY() - this.getCoordY() > 0 ? 1 : -1;
             if (isLegalMove(targetPiece.getCoordX() - directionX, targetPiece.getCoordY(), board)
@@ -75,10 +77,12 @@ public class Queen extends Piece {
             return false;
         }
 
-        if (Math.abs(targetPiece.getCoordX() - this.getCoordX()) == Math.abs(targetPiece.getCoordY() - this.getCoordY())) {
-            int directionXD = targetPiece.getCoordX() - this.getCoordX() > 0 ? 1 : -1;
-            int directionYD = targetPiece.getCoordY() - this.getCoordY() > 0 ? 1 : -1;
-            if (isLegalMove(targetPiece.getCoordX() - directionXD, targetPiece.getCoordY() - directionYD, board)) {
+        if (Math.abs(targetPiece.getCoordX() - this.getCoordX())
+                == Math.abs(targetPiece.getCoordY() - this.getCoordY())) {
+            int directionXd = targetPiece.getCoordX() - this.getCoordX() > 0 ? 1 : -1;
+            int directionYd = targetPiece.getCoordY() - this.getCoordY() > 0 ? 1 : -1;
+            if (isLegalMove(targetPiece.getCoordX() - directionXd,
+                    targetPiece.getCoordY() - directionYd, board)) {
                 return true;
             }
         }

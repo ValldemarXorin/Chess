@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
 import org.springframework.stereotype.Service;
 
 @Service
@@ -38,7 +37,8 @@ public class PlayerService {
         throw new NotFoundException();
     }
 
-    public List<PlayerDto> getPlayersByNameAndEmail(String name, String email) throws NotFoundException {
+    public List<PlayerDto> getPlayersByNameAndEmail(String name, String email)
+            throws NotFoundException {
         List<Player> players;
 
         if (name != null && !name.isEmpty()) {

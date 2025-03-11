@@ -18,11 +18,11 @@ public class Bishop extends Piece {
         }
 
         if (Math.abs(endX - this.getCoordX()) == Math.abs(endY - this.getCoordY())) {
-            int directionXD = endX - this.getCoordX() > 0 ? 1 : -1;
-            int directionYD = endY - this.getCoordY() > 0 ? 1 : -1;
+            int directionXd = endX - this.getCoordX() > 0 ? 1 : -1;
+            int directionYd = endY - this.getCoordY() > 0 ? 1 : -1;
 
-            for (int i = this.getCoordX() + directionXD, j = this.getCoordY() + directionYD;
-                 i != endX + directionXD; i += directionXD, j += directionYD) {
+            for (int i = this.getCoordX() + directionXd, j = this.getCoordY() + directionYd;
+                 i != endX + directionXd; i += directionXd, j += directionYd) {
                 if (board.getPieceAt(i, j) != null) {
                     return false;
                 }
@@ -40,10 +40,11 @@ public class Bishop extends Piece {
             return false; // Не можем захватить пустую клетку или свою фигуру
         }
 
-        int directionXD = targetPiece.getCoordX() - this.getCoordX() > 0 ? 1 : -1;
-        int directionYD = targetPiece.getCoordY() - this.getCoordY() > 0 ? 1 : -1;
+        int directionXd = targetPiece.getCoordX() - this.getCoordX() > 0 ? 1 : -1;
+        int directionYd = targetPiece.getCoordY() - this.getCoordY() > 0 ? 1 : -1;
 
-        if (isLegalMove(targetPiece.getCoordX() - directionXD, targetPiece.getCoordY() - directionYD, board)) {
+        if (isLegalMove(targetPiece.getCoordX() - directionXd,
+                targetPiece.getCoordY() - directionYd, board)) {
             return true;
         }
 

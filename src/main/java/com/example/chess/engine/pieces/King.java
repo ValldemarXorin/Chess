@@ -16,8 +16,6 @@ public class King extends Piece {
                 || this.getCoordX() == endX && this.getCoordY() == endY) {
             return false;
         }
-        int directionX = endX - this.getCoordX();
-        int directionY = endY - this.getCoordY();
 
         return true;
     }
@@ -29,6 +27,7 @@ public class King extends Piece {
 
     @Override
     public void moveDone(int endX, int endY) {
-
+        this.setCoordX(endX);
+        this.setCoordY(endY);
     }
 }

@@ -2,55 +2,77 @@ package com.example.chess.service;
 
 import com.example.chess.dto.PlayerDto;
 import com.example.chess.entity.Player;
+import com.example.chess.exception.InvalidParamException;
 import com.example.chess.exception.NotFoundException;
+import com.example.chess.repository.PlayerRepository;
+import com.example.chess.utils.PasswordUtil;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Service;
 
 @Service
 public class PlayerService {
 
-    private final Player[] players;
+    private final PlayerRepository playerRepository;
 
-    public PlayerService() {
-        players = new Player[4];
-        players[0] = new Player(1, "vova3089927@gmail.com", "12345678", "Valldemar");
-        players[1] = new Player(2, "pAlAdin11@email.com", "87654321", "MateMaster");
-        players[2] = new Player(3, "octopus34error@email.com", "18273645", "Octopus");
-        players[3] = new Player(4, "cocococor@email.com", "1827344", "MateMaster");
+    public PlayerService(PlayerRepository playerRepository) {
+        this.playerRepository = playerRepository;
     }
 
     public PlayerDto getPlayerByEmail(String email) throws NotFoundException {
-        for (Player player : players) {
-            if (player.getEmail().equals(email)) {
-                return new PlayerDto(player);
-            }
+        Optional<Player> player = playerRepository.findByEmail(email);
+        if (player.isPresent()) {
+            return new PlayerDto(player.get());
         }
         throw new NotFoundException();
     }
 
     public PlayerDto getPlayerById(long id) throws NotFoundException {
-        for (Player player : players) {
-            if (player.getId() == id) {
-                return new PlayerDto(player);
-            }
+        Optional<Player> player = playerRepository.findById(id);
+        if (player.isPresent()) {
+            return new PlayerDto(player.get());
         }
         throw new NotFoundException();
     }
 
-    public List<PlayerDto> getPlayersByNameAndEmail(String name, String email)
-            throws NotFoundException {
-        List<PlayerDto> foundPlayers = new ArrayList<>();
-        for (Player player : players) {
-            if (player.getName().equals(name)) {
-                if (email == null || player.getEmail().equals(email)) {
-                    foundPlayers.add(new PlayerDto(player));
-                }
+    public List<PlayerDto> getPlayersByNameAndEmail(String name, String email) throws NotFoundException {
+        List<Player> players;
+
+        if (name != null && !name.isEmpty()) {
+            players = playerRepository.findByName(name);
+        } else {
+            players = new ArrayList<>();
+        }
+
+        if (email != null && !email.isEmpty()) {
+            Optional<Player> playerByEmail = playerRepository.findByEmail(email);
+
+            if (!players.isEmpty()) {
+                players.clear();
+                playerByEmail.ifPresent(players::add);
+            } else {
+                playerByEmail.ifPresent(players::add);
             }
         }
-        if (foundPlayers.isEmpty()) {
+
+        if (players.isEmpty()) {
             throw new NotFoundException();
         }
-        return foundPlayers;
+
+        return players.stream()
+                .map(PlayerDto::new)
+                .collect(Collectors.toList());
+    }
+
+    public PlayerDto createPlayer(Player player) throws InvalidParamException {
+        if (playerRepository.findByEmail(player.getEmail()).isPresent()) {
+            throw new InvalidParamException();
+        }
+        player.setHashPassword(PasswordUtil.hashPassword(player.getHashPassword()));
+        playerRepository.save(player);
+        return new PlayerDto(player);
     }
 }

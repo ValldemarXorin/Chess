@@ -35,10 +35,10 @@ public class Player {
     private String name;
 
     @OneToMany(mappedBy = "whitePlayer", cascade = CascadeType.ALL)
-    private List<Game> whiteGames = new ArrayList<>();
+    private List<GameInfo> whiteGameInfos = new ArrayList<>();
 
     @OneToMany(mappedBy = "blackPlayer", cascade = CascadeType.ALL)
-    private List<Game> blackGames = new ArrayList<>();
+    private List<GameInfo> blackGameInfos = new ArrayList<>();
 
 
     public Player(long id, String email, String hashPassword,

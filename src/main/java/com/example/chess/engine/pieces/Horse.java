@@ -12,17 +12,16 @@ public class Horse extends Piece {
 
     @Override
     public boolean isLegalMove(int endX, int endY, Board board) {
-        if (endX < 0 || endX >= 8 || endY < 0 || endY >= 8
-                || this.getCoordX() == endX && this.getCoordY() == endY) {
+        if (isInvalidPosition(endX, endY)) {
             return false;
         }
 
         int directionX = endX - this.getCoordX();
         int directionY = endY - this.getCoordY();
 
-        return board.getPieceAt(endX, endY) == null &&
-                ((Math.abs(directionX) == 2 && Math.abs(directionY) == 1) ||
-                        (Math.abs(directionX) == 1 && Math.abs(directionY) == 2));
+        return board.getPieceAt(endX, endY) == null
+                && ((Math.abs(directionX) == 2 && Math.abs(directionY) == 1)
+                || (Math.abs(directionX) == 1 && Math.abs(directionY) == 2));
     }
 
     @Override
@@ -34,13 +33,7 @@ public class Horse extends Piece {
         int directionX = targetPiece.getCoordX() - this.getCoordX();
         int directionY = targetPiece.getCoordY() - this.getCoordY();
 
-        return Math.abs(directionX) == 2 && Math.abs(directionY) == 1 ||
-                Math.abs(directionX) == 1 && Math.abs(directionY) == 2;
-    }
-
-    @Override
-    public void moveDone(int endX, int endY) {
-        this.setCoordX(endX);
-        this.setCoordY(endY);
+        return Math.abs(directionX) == 2 && Math.abs(directionY) == 1
+                || Math.abs(directionX) == 1 && Math.abs(directionY) == 2;
     }
 }

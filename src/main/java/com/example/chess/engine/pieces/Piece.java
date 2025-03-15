@@ -6,7 +6,7 @@ import lombok.Setter;
 
 @Setter
 @Getter
-public abstract class Piece {
+public abstract class Piece implements Cloneable {
     private Color color;
     private int coordX;
     private int coordY;
@@ -15,5 +15,25 @@ public abstract class Piece {
 
     public abstract boolean isLegalCapture(Piece targetPiece, Board board);
 
-    public abstract void moveDone(int endX, int endY);
+    public void moveDone(int endX, int endY) {
+        this.setCoordX(endX);
+        this.setCoordY(endY);
+    }
+
+    protected boolean isInvalidPosition(int endX, int endY) {
+        if (endX < 0 || endX >= 8 || endY < 0 || endY >= 8
+                || this.getCoordX() == endX && this.getCoordY() == endY) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public Piece clone() {
+        try {
+            return (Piece) super.clone(); // Используем стандартный механизм клонирования
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException("Cloning not supported", e);
+        }
+    }
 }

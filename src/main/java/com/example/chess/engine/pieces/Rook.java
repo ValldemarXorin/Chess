@@ -2,9 +2,8 @@ package com.example.chess.engine.pieces;
 
 import com.example.chess.engine.Board;
 
-public class King extends Piece {
-
-    public King(Color color, int x, int y) {
+public class Rook extends Piece {
+    public Rook(Color color, int x, int y) {
         this.setColor(color);
         this.setCoordX(x);
         this.setCoordY(y);
@@ -16,10 +15,14 @@ public class King extends Piece {
             return false;
         }
 
+        int directionX = endX - this.getCoordX() > 0 ? 1 : -1;
+        int directionY = endY - this.getCoordY() > 0 ? 1 : -1;
+
+
     }
 
     @Override
     public boolean isLegalCapture(Piece targetPiece, Board board) {
-        return false;
+
     }
 }

@@ -20,9 +20,7 @@ public class Pawn extends Piece {
 
     @Override
     public boolean isLegalMove(int endX, int endY, Board board) {
-
-        if (endX < 0 || endX >= 8 || endY < 0 || endY >= 8
-                || this.getCoordX() == endX && this.getCoordY() == endY) {
+        if (isInvalidPosition(endX, endY)) {
             return false;
         }
 
@@ -53,9 +51,9 @@ public class Pawn extends Piece {
         }
 
         // взятие на проходе
-        return targetPiece instanceof Pawn pawn &&
-                pawn.isEnPassant() &&
-                board.getPieceAt(targetPiece.getCoordX(), targetPiece.getCoordY()) == null;
+        return targetPiece instanceof Pawn pawn
+                && pawn.isEnPassant()
+                && board.getPieceAt(targetPiece.getCoordX(), targetPiece.getCoordY()) == null;
     }
 
     @Override

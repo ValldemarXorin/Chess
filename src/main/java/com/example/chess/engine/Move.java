@@ -20,8 +20,4 @@ public class Move {
         this.endX = endX;
         this.endY = endY;
     }
-
-    public String toAnnotation() {
-        
-    }
 }

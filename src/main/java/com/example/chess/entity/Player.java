@@ -1,15 +1,11 @@
 package com.example.chess.entity;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -34,16 +30,22 @@ public class Player {
     @Column(nullable = false)
     private String name;
 
-    @OneToMany(mappedBy = "whitePlayer", cascade = CascadeType.ALL)
-    private List<GameInfo> whiteGameInfos = new ArrayList<>();
+    @OneToMany(mappedBy = "whitePlayer", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private List<GameInfo> gamesAsWhitePlayer = new ArrayList<>();
 
-    @OneToMany(mappedBy = "blackPlayer", cascade = CascadeType.ALL)
-    private List<GameInfo> blackGameInfos = new ArrayList<>();
+    @OneToMany(mappedBy = "blackPlayer", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private List<GameInfo> gamesAsBlackPlayer = new ArrayList<>();
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "user_friends",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "friend_id")
+    )
+    private Set<Player> friends = null;
 
 
-    public Player(long id, String email, String hashPassword,
-                  String name) {
-        this.id = id;
+    public Player(String email, String hashPassword, String name) {
         this.email = email;
         this.hashPassword = hashPassword;
         this.name = name;

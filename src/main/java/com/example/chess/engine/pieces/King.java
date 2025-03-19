@@ -2,6 +2,8 @@ package com.example.chess.engine.pieces;
 
 import com.example.chess.engine.Board;
 
+//Дописать
+
 public class King extends Piece {
 
     public King(Color color, int x, int y) {
@@ -16,6 +18,7 @@ public class King extends Piece {
             return false;
         }
 
+        return true;
     }
 
     @Override

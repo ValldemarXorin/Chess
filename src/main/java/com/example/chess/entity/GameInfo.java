@@ -1,13 +1,7 @@
 package com.example.chess.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,7 +11,7 @@ import lombok.Setter;
 @Setter
 @Getter
 @NoArgsConstructor
-@Table(name = "games")
+@Table(name = "games_info")
 public class GameInfo {
 
     @Id
@@ -30,13 +24,25 @@ public class GameInfo {
     @Column(nullable = false)
     private LocalDateTime endTime;
 
-    @ManyToOne
-    @JoinColumn(name = "white_player_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "whitePlayer_id")
     private Player whitePlayer;
 
-    @ManyToOne
-    @JoinColumn(name = "black_player_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "blackPlayer_id")
     private Player blackPlayer;
 
+    private String status;
+
     private String notes;
+
+    public GameInfo(LocalDateTime startTime, LocalDateTime endTime, Player whitePlayer, Player blackPlayer, String status,
+                    String notes) {
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.whitePlayer = whitePlayer;
+        this.blackPlayer = blackPlayer;
+        this.status = status;
+        this.notes = notes;
+    }
 }

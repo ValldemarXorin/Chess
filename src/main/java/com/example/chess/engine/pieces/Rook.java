@@ -18,11 +18,11 @@ public class Rook extends Piece {
         int directionX = endX - this.getCoordX() > 0 ? 1 : -1;
         int directionY = endY - this.getCoordY() > 0 ? 1 : -1;
 
-
+        return true;
     }
 
     @Override
     public boolean isLegalCapture(Piece targetPiece, Board board) {
-
+        return false;
     }
 }

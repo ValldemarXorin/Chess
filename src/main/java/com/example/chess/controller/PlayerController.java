@@ -1,6 +1,6 @@
 package com.example.chess.controller;
 
-import com.example.chess.dto.PlayerDto;
+import com.example.chess.dto.response.PlayerDtoResponse;
 import com.example.chess.entity.Player;
 import com.example.chess.exception.InvalidParamException;
 import com.example.chess.exception.NotFoundException;
@@ -27,7 +27,7 @@ public class PlayerController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<PlayerDto> findPlayerById(@PathVariable Long id) {
+    public ResponseEntity<PlayerDtoResponse> findPlayerById(@PathVariable Long id) {
         try {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(playerService.getPlayerById(id));
@@ -37,14 +37,14 @@ public class PlayerController {
     }
 
     @GetMapping
-    public ResponseEntity<List<PlayerDto>> findPlayersByNameAndEmail(@RequestParam(required
+    public ResponseEntity<List<PlayerDtoResponse>> findPlayersByNameAndEmail(@RequestParam(required
                                                                                  = false)
                                                                          String name,
                                                                      @RequestParam(required
                                                                              = false)
                                                                      String email) {
         try {
-            List<PlayerDto> playersDto = playerService.getPlayersByNameAndEmail(name, email);
+            List<PlayerDtoResponse> playersDto = playerService.getPlayersByNameAndEmail(name, email);
             return ResponseEntity.ok(playersDto);
         } catch (NotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -54,7 +54,7 @@ public class PlayerController {
     }
 
     @PostMapping
-    public ResponseEntity<PlayerDto> createPlayer(@RequestBody Player player) {
+    public ResponseEntity<PlayerDtoResponse> createPlayer(@RequestBody Player player) {
         try {
             return ResponseEntity.ok(playerService.createPlayer(player));
         } catch (InvalidParamException e) {

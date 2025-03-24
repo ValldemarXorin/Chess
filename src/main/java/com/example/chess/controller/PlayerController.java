@@ -1,20 +1,17 @@
 package com.example.chess.controller;
 
+import com.example.chess.dto.response.GameInfoDtoResponse;
 import com.example.chess.dto.response.PlayerDtoResponse;
 import com.example.chess.entity.Player;
 import com.example.chess.exception.InvalidParamException;
 import com.example.chess.exception.NotFoundException;
 import com.example.chess.service.PlayerService;
 import java.util.List;
+import java.util.Set;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/players")
@@ -35,6 +32,7 @@ public class PlayerController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
+
 
     @GetMapping
     public ResponseEntity<List<PlayerDtoResponse>> findPlayersByNameAndEmail(@RequestParam(required
@@ -57,6 +55,62 @@ public class PlayerController {
     public ResponseEntity<PlayerDtoResponse> createPlayer(@RequestBody Player player) {
         try {
             return ResponseEntity.ok(playerService.createPlayer(player));
+        } catch (InvalidParamException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/{id}/gamesInfo")
+    public ResponseEntity<List<GameInfoDtoResponse>> getGamesInfo(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(playerService.getAllGamesInfo(id));
+        } catch (InvalidParamException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/{id}/friends")
+    public ResponseEntity<Set<PlayerDtoResponse>> getFriends(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(playerService.getAllFriends(id));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @PostMapping("/{id}/send_friend_request")
+    public ResponseEntity<PlayerDtoResponse> sendFriendRequest(@PathVariable Long id, @RequestBody String friendEmail) {
+        try {
+            friendEmail = friendEmail.replaceAll("\"", ""); // Убираем кавычки
+            return ResponseEntity.ok(playerService.sendFriendRequest(id, friendEmail));
+        } catch (InvalidParamException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+        catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/{id}/get_friend_request")
+    public ResponseEntity<Set<PlayerDtoResponse>> getFriendRequest(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(playerService.getFriendRequests(id));
+        } catch (InvalidParamException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+        catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @DeleteMapping("/{id}/remove_friend")
+    public ResponseEntity<PlayerDtoResponse> removeFriend(@PathVariable Long id, @RequestBody String friendEmail) {
+        try {
+            return ResponseEntity.ok(playerService.deleteFriend(id, friendEmail));
         } catch (InvalidParamException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         } catch (Exception e) {

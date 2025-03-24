@@ -3,6 +3,7 @@ package com.example.chess.entity;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -36,13 +37,21 @@ public class Player {
     @OneToMany(mappedBy = "blackPlayer", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<GameInfo> gamesAsBlackPlayer = new ArrayList<>();
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
             name = "user_friends",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "friend_id")
     )
-    private Set<Player> friends = null;
+    private Set<Player> friends = new HashSet<>();
+
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(
+            name = "friend_requests",
+            joinColumns = @JoinColumn(name = "sender_user_id"),
+            inverseJoinColumns = @JoinColumn(name = "recipient_user_id")
+    )
+    private Set<Player> friendRequests = new HashSet<>();
 
 
     public Player(String email, String hashPassword, String name) {

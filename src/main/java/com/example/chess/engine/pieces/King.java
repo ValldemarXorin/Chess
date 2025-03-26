@@ -14,11 +14,7 @@ public class King extends Piece {
 
     @Override
     public boolean isLegalMove(int endX, int endY, Board board) {
-        if (isInvalidPosition(endX, endY)) {
-            return false;
-        }
-
-        return true;
+        return !isInvalidPosition(endX, endY);
     }
 
     @Override

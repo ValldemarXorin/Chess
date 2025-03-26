@@ -21,10 +21,7 @@ public abstract class Piece {
     }
 
     protected boolean isInvalidPosition(int endX, int endY) {
-        if (endX < 0 || endX >= 8 || endY < 0 || endY >= 8
-                || this.getCoordX() == endX && this.getCoordY() == endY) {
-            return true;
-        }
-        return false;
+        return endX < 0 || endX >= 8 || endY < 0 || endY >= 8
+                || (this.getCoordX() == endX && this.getCoordY() == endY);
     }
 }

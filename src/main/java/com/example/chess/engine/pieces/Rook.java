@@ -11,14 +11,7 @@ public class Rook extends Piece {
 
     @Override
     public boolean isLegalMove(int endX, int endY, Board board) {
-        if (isInvalidPosition(endX, endY)) {
-            return false;
-        }
-
-        int directionX = endX - this.getCoordX() > 0 ? 1 : -1;
-        int directionY = endY - this.getCoordY() > 0 ? 1 : -1;
-
-        return true;
+        return !isInvalidPosition(endX, endY);
     }
 
     @Override

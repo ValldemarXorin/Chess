@@ -45,7 +45,7 @@ public class GameInfoServiceImpl implements GameInfoService {
     public List<GameInfoDtoResponse> getAllGames() {
         return gameInfoRepository.findAll().stream()
                 .map(GameInfoMapper::toDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override

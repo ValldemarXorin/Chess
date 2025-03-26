@@ -12,20 +12,12 @@ public class Queen extends Piece {
 
     @Override
     public boolean isLegalMove(int endX, int endY, Board board) {
-        if (endX == this.getCoordX() && endY == this.getCoordY()) {
-            return true;
-        }
-
-        return false;
+        return endX == this.getCoordX() && endY == this.getCoordY();
     }
 
     @Override
     public boolean isLegalCapture(Piece targetPiece, Board board) {
-        if (targetPiece.getCoordX() == this.getCoordX()
-        && targetPiece.getCoordY() == this.getCoordY()) {
-            return true;
-        }
-
-        return false;
+        return targetPiece.getCoordX() == this.getCoordX()
+                && targetPiece.getCoordY() == this.getCoordY();
     }
 }

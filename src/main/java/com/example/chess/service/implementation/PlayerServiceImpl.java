@@ -116,7 +116,7 @@ public class PlayerServiceImpl implements PlayerService {
         recipient.getFriendRequests().add(sender);
 
         try {
-            PlayerDtoResponse playerDtoResponse = addFriend(senderId, recipientEmail);
+            addFriend(senderId, recipientEmail);
         } catch (InvalidParamException e) {
             playerRepository.save(sender);
         }
@@ -179,9 +179,7 @@ public class PlayerServiceImpl implements PlayerService {
         Optional<Player> playerOpt = playerRepository.findById(id);
         playerOpt.orElseThrow(NotFoundException::new);
         Player player = playerOpt.get();
-        Set<Player> friends = player.getFriends();
         player.setFriends(null);
-        Set<Player> friendsRequests = player.getFriendRequests();
         player.setFriendRequests(null);
 
         playerRepository.deleteFriendshipsByPlayerId(id);

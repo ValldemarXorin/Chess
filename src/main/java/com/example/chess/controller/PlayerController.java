@@ -8,10 +8,16 @@ import com.example.chess.exception.NotFoundException;
 import com.example.chess.service.PlayerService;
 import java.util.List;
 import java.util.Set;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/players")
@@ -42,7 +48,8 @@ public class PlayerController {
                                                                              = false)
                                                                      String email) {
         try {
-            List<PlayerDtoResponse> playersDto = playerService.getPlayersByNameAndEmail(name, email);
+            List<PlayerDtoResponse> playersDto =
+                    playerService.getPlayersByNameAndEmail(name, email);
             return ResponseEntity.ok(playersDto);
         } catch (NotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -83,14 +90,14 @@ public class PlayerController {
     }
 
     @PostMapping("/{id}/send_friend_request")
-    public ResponseEntity<PlayerDtoResponse> sendFriendRequest(@PathVariable Long id, @RequestBody String friendEmail) {
+    public ResponseEntity<PlayerDtoResponse> sendFriendRequest(@PathVariable Long id,
+                                                               @RequestBody String friendEmail) {
         try {
-            friendEmail = friendEmail.replaceAll("\"", ""); // Убираем кавычки
+            friendEmail = friendEmail.replace("\"", ""); // Убираем кавычки
             return ResponseEntity.ok(playerService.sendFriendRequest(id, friendEmail));
         } catch (InvalidParamException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -101,17 +108,29 @@ public class PlayerController {
             return ResponseEntity.ok(playerService.getFriendRequests(id));
         } catch (InvalidParamException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
     @DeleteMapping("/{id}/remove_friend")
-    public ResponseEntity<PlayerDtoResponse> removeFriend(@PathVariable Long id, @RequestBody String friendEmail) {
+    public ResponseEntity<PlayerDtoResponse> removeFriend(@PathVariable Long id,
+                                                          @RequestBody String friendEmail) {
         try {
+            friendEmail = friendEmail.replace("\"", "");
             return ResponseEntity.ok(playerService.deleteFriend(id, friendEmail));
         } catch (InvalidParamException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<PlayerDtoResponse> removePlayer(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(playerService.deletePlayerById(id));
+        } catch (NotFoundException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

@@ -3,10 +3,13 @@ package com.example.chess.engine;
 import com.example.chess.engine.pieces.Color;
 import com.example.chess.engine.pieces.King;
 import com.example.chess.engine.pieces.Piece;
-
 import java.util.List;
 
 public final class GameAnalyzer {
+
+    private GameAnalyzer() {
+        throw new UnsupportedOperationException("Utility class should not be instantiated");
+    }
 
     public static boolean isCheck(Color color, Board board) {
         King king = findKing(color, board);
@@ -57,7 +60,7 @@ public final class GameAnalyzer {
         Allocation pieceAllocation = new Allocation(piece);
         List<Move> pieceMoves = pieceAllocation.calculateAllMoves(board);
         for (Move move : pieceMoves) {
-            Board clonedBoard = board.clone();
+            Board clonedBoard = new Board(board);
             clonedBoard.setPieceAt(piece.getCoordX(), piece.getCoordY(), null);
             clonedBoard.setPieceAt(move.getEndX(), move.getEndY(), piece);
             if (isCheck(piece.getColor(), clonedBoard)) {

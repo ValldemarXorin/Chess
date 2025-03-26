@@ -6,7 +6,7 @@ import lombok.Setter;
 
 @Setter
 @Getter
-public abstract class Piece implements Cloneable {
+public abstract class Piece {
     private Color color;
     private int coordX;
     private int coordY;
@@ -26,14 +26,5 @@ public abstract class Piece implements Cloneable {
             return true;
         }
         return false;
-    }
-
-    @Override
-    public Piece clone() {
-        try {
-            return (Piece) super.clone(); // Используем стандартный механизм клонирования
-        } catch (CloneNotSupportedException e) {
-            throw new RuntimeException("Cloning not supported", e);
-        }
     }
 }

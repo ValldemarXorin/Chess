@@ -1,11 +1,17 @@
 package com.example.chess.engine;
 
-import com.example.chess.engine.pieces.*;
-import com.example.chess.exception.gameException.IllegalMove;
+import com.example.chess.engine.pieces.Bishop;
+import com.example.chess.engine.pieces.Color;
+import com.example.chess.engine.pieces.Horse;
+import com.example.chess.engine.pieces.King;
+import com.example.chess.engine.pieces.Pawn;
+import com.example.chess.engine.pieces.Piece;
+import com.example.chess.engine.pieces.Queen;
+import com.example.chess.engine.pieces.Rook;
+import com.example.chess.exception.game.IllegalMove;
+import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.List;
 
 @Getter
 @Setter
@@ -17,6 +23,22 @@ public class Board {
         field = new Piece[8][8];
         isWhiteToMove = true;
         initializeBoard();
+    }
+
+    public Board(Board board) {
+
+        this.isWhiteToMove = board.isWhiteToMove;
+
+        for (int x = 0; x < 8; x++) {
+            for (int y = 0; y < 8; y++) {
+                Piece piece = this.field[x][y];
+                if (piece != null) {
+                    this.setPieceAt(x, y, piece); // тут должен быть клон piece
+                } else {
+                    this.setPieceAt(x, y, null);
+                }
+            }
+        }
     }
 
     public Piece getPieceAt(int x, int y) {
@@ -101,28 +123,5 @@ public class Board {
 
     public void changeMove() {
         isWhiteToMove = !isWhiteToMove;
-    }
-
-    public Board clone() {
-        Board clonedBoard = new Board(); // Создаем новую доску
-
-        // Копируем состояние isWhiteToMove
-        clonedBoard.setWhiteToMove(this.isWhiteToMove);
-
-        // Глубокое копирование массива field
-        for (int x = 0; x < 8; x++) {
-            for (int y = 0; y < 8; y++) {
-                Piece piece = this.field[x][y];
-                if (piece != null) {
-                    // Клонируем каждую фигуру и помещаем ее в новую доску
-                    clonedBoard.setPieceAt(x, y, piece.clone());
-                } else {
-                    // Если клетка пуста, оставляем ее пустой
-                    clonedBoard.setPieceAt(x, y, null);
-                }
-            }
-        }
-
-        return clonedBoard;
     }
 }

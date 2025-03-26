@@ -5,6 +5,11 @@ import com.example.chess.dto.response.PlayerDtoResponse;
 import com.example.chess.entity.Player;
 
 public class PlayerMapper {
+
+    private PlayerMapper() {
+        throw new UnsupportedOperationException("Utility class should not be instantiated");
+    }
+
     public static PlayerDtoResponse toDto(Player player) {
         return new PlayerDtoResponse(player.getId(), player.getEmail(), player.getName());
     }

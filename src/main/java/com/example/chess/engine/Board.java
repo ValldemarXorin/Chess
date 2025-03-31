@@ -16,6 +16,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class Board {
+    private KingTracker kingTracker;
     private Piece[][] field;
     private boolean isWhiteToMove;
 
@@ -23,6 +24,7 @@ public class Board {
         field = new Piece[8][8];
         isWhiteToMove = true;
         initializeBoard();
+        kingTracker = new KingTracker((King) field[0][7], (King) field[4][7]);
     }
 
     public Board(Board board) {
@@ -31,7 +33,7 @@ public class Board {
 
         for (int x = 0; x < 8; x++) {
             for (int y = 0; y < 8; y++) {
-                Piece piece = this.field[x][y];
+                Piece piece = this.field[x][y].clone();
                 if (piece != null) {
                     this.setPieceAt(x, y, piece); // тут должен быть клон piece
                 } else {
@@ -123,5 +125,9 @@ public class Board {
 
     public void changeMove() {
         isWhiteToMove = !isWhiteToMove;
+    }
+
+    public King getKing(Color color) {
+        return color == Color.WHITE ? kingTracker.getWhiteKing() : kingTracker.getBlackKing();
     }
 }

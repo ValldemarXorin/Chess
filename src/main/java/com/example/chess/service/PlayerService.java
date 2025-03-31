@@ -1,5 +1,6 @@
 package com.example.chess.service;
 
+import com.example.chess.dto.request.PlayerDtoRequest;
 import com.example.chess.dto.response.GameInfoDtoResponse;
 import com.example.chess.dto.response.PlayerDtoResponse;
 import com.example.chess.entity.Player;
@@ -38,4 +39,7 @@ public interface PlayerService {
 
     public PlayerDtoResponse deletePlayerById(long id)
             throws NotFoundException;
+
+    public PlayerDtoResponse updatePlayerById(long id, PlayerDtoRequest playerDtoRequest)
+            throws InvalidParamException;
 }

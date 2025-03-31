@@ -1,5 +1,6 @@
 package com.example.chess.service.implementation;
 
+import com.example.chess.dto.request.PlayerDtoRequest;
 import com.example.chess.dto.response.GameInfoDtoResponse;
 import com.example.chess.dto.response.PlayerDtoResponse;
 import com.example.chess.entity.GameInfo;
@@ -185,6 +186,20 @@ public class PlayerServiceImpl implements PlayerService {
         playerRepository.deleteFriendshipsByPlayerId(id);
         playerRepository.deleteFriendRequestsByPlayerId(id);
         playerRepository.delete(player);
+        return PlayerMapper.toDto(player);
+    }
+
+    @Override
+    @Transactional
+    public PlayerDtoResponse updatePlayerById(long id, PlayerDtoRequest playerDtoRequest)
+        throws InvalidParamException {
+        Optional<Player> playerOpt = playerRepository.findById(id);
+        playerOpt.orElseThrow(InvalidParamException::new);
+        Player player = playerOpt.get();
+        player.setName(playerDtoRequest.getName());
+        player.setEmail(playerDtoRequest.getEmail());
+        player.setHashPassword(PasswordUtil.hashPassword(playerDtoRequest.getPassword()));
+        playerRepository.save(player);
         return PlayerMapper.toDto(player);
     }
 }

@@ -12,7 +12,7 @@ public final class GameAnalyzer {
     }
 
     public static boolean isCheck(Color color, Board board) {
-        King king = findKing(color, board);
+        King king = board.getKing(color);
         if (king == null) {
             return false;
         }
@@ -33,25 +33,13 @@ public final class GameAnalyzer {
             return false;
         }
 
-        King king = findKing(color, board);
+        King king = board.getKing(color);
         Allocation kingAllocation = new Allocation(king);
         return !kingAllocation.hasAnyMoves(board);
     }
 
-    public static King findKing(Color color, Board board) {
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                Piece piece = board.getPieceAt(i, j);
-                if (piece instanceof King king && piece.getColor() == color) {
-                    return king;
-                }
-            }
-        }
-        return null;
-    }
-
     public static boolean isPiecePinned(Piece piece, Board board) {
-        King king = findKing(piece.getColor(), board);
+        King king = board.getKing(piece.getColor());
 
         if (king == null) {
             return false;

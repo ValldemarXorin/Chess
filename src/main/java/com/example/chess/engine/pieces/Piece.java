@@ -12,8 +12,26 @@ public abstract class Piece {
     private int coordY;
 
     public abstract boolean isLegalMove(int endX, int endY, Board board);
+    // структура:
+    // 1. проверка на isInvalidPosition
+    // 2. проверка на правильность хода фигуры (по правилам)
+    // 3. определить направление движения фигуры по OY (directionY) и OX (directionX) 9
+    // (-1 в отрицательном направлении, 0 нет движения по данной оси, 1 в положительном направлении)
+    // 4. проверка на возможность хода фигуры (не мешает ли другая фигура)
 
-    public abstract boolean isLegalCapture(Piece targetPiece, Board board);
+    public boolean isLegalCapture(Piece targetPiece, Board board) {
+        if (targetPiece == null) {
+            return false;
+        }
+
+        Board boardCopy = new Board(board);
+        boardCopy.setPieceAt(targetPiece.getCoordX(), targetPiece.getCoordY(), null);
+        if (!isLegalMove(targetPiece.getCoordX(), targetPiece.getCoordY(), boardCopy)) {
+            return false;
+        }
+
+        return true;
+    }
 
     public void moveDone(int endX, int endY) {
         this.setCoordX(endX);
@@ -24,4 +42,6 @@ public abstract class Piece {
         return endX < 0 || endX >= 8 || endY < 0 || endY >= 8
                 || (this.getCoordX() == endX && this.getCoordY() == endY);
     }
+
+    public abstract Piece clone();
 }

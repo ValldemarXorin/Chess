@@ -4,6 +4,9 @@ import com.example.chess.engine.Board;
 import lombok.Getter;
 import lombok.Setter;
 
+
+// попытаться подогнать под общую структуру фигур
+
 @Getter
 @Setter
 public class Pawn extends Piece {
@@ -69,5 +72,10 @@ public class Pawn extends Piece {
         }
         this.setCoordX(endX);
         this.setCoordY(endY);
+    }
+
+    @Override
+    public Piece clone() {
+        return new Pawn(this.getColor(), this.getCoordX(), this.getCoordY());
     }
 }

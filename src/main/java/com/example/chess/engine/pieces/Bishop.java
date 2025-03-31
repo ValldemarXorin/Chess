@@ -12,38 +12,29 @@ public class Bishop extends Piece {
 
     @Override
     public boolean isLegalMove(int endX, int endY, Board board) {
-
         if (isInvalidPosition(endX, endY)) {
             return false;
         }
 
-        if (Math.abs(endX - this.getCoordX()) == Math.abs(endY - this.getCoordY())) {
-            int directionXd = endX - this.getCoordX() > 0 ? 1 : -1;
-            int directionYd = endY - this.getCoordY() > 0 ? 1 : -1;
-
-            for (int i = this.getCoordX() + directionXd, j = this.getCoordY() + directionYd;
-                 i != endX + directionXd; i += directionXd, j += directionYd) {
-                if (board.getPieceAt(i, j) != null) {
-                    return false;
-                }
-            }
-
-            return true;
+        if (!(Math.abs(endX - this.getCoordX()) == Math.abs(endY - this.getCoordY()))) {
+            return false;
         }
 
-        return false;
+        int directionX = endX - this.getCoordX() > 0 ? 1 : -1;
+        int directionY = endY - this.getCoordY() > 0 ? 1 : -1;
+
+        for (int i = this.getCoordX() + directionX, j = this.getCoordY() + directionY;
+                    i != endX && j != endY; i += directionX, j += directionY) {
+            if (board.getPieceAt(i, j) != null) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     @Override
-    public boolean isLegalCapture(Piece targetPiece, Board board) {
-        if (targetPiece == null || targetPiece.getColor() == this.getColor()) {
-            return false; // Не можем захватить пустую клетку или свою фигуру
-        }
-
-        int directionXd = targetPiece.getCoordX() - this.getCoordX() > 0 ? 1 : -1;
-        int directionYd = targetPiece.getCoordY() - this.getCoordY() > 0 ? 1 : -1;
-
-        return isLegalMove(targetPiece.getCoordX() - directionXd,
-                targetPiece.getCoordY() - directionYd, board);
+    public Piece clone() {
+        return new Bishop(this.getColor(), this.getCoordX(), this.getCoordY());
     }
 }

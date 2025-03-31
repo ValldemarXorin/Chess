@@ -16,24 +16,16 @@ public class Horse extends Piece {
             return false;
         }
 
-        int directionX = endX - this.getCoordX();
-        int directionY = endY - this.getCoordY();
+        int distanceX = endX - this.getCoordX();
+        int distanceY = endY - this.getCoordY();
 
         return board.getPieceAt(endX, endY) == null
-                && ((Math.abs(directionX) == 2 && Math.abs(directionY) == 1)
-                || (Math.abs(directionX) == 1 && Math.abs(directionY) == 2));
+                && ((Math.abs(distanceX) == 2 && Math.abs(distanceY) == 1)
+                || (Math.abs(distanceX) == 1 && Math.abs(distanceY) == 2));
     }
 
     @Override
-    public boolean isLegalCapture(Piece targetPiece, Board board) {
-        if (targetPiece == null || targetPiece.getColor() == this.getColor()) {
-            return false; // Не можем захватить пустую клетку или свою фигуру
-        }
-
-        int directionX = targetPiece.getCoordX() - this.getCoordX();
-        int directionY = targetPiece.getCoordY() - this.getCoordY();
-
-        return Math.abs(directionX) == 2 && Math.abs(directionY) == 1
-                || Math.abs(directionX) == 1 && Math.abs(directionY) == 2;
+    public Piece clone() {
+        return new Horse(this.getColor(), this.getCoordX(), this.getCoordY());
     }
 }

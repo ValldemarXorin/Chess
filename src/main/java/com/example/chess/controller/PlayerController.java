@@ -1,5 +1,6 @@
 package com.example.chess.controller;
 
+import com.example.chess.dto.request.PlayerDtoRequest;
 import com.example.chess.dto.response.GameInfoDtoResponse;
 import com.example.chess.dto.response.PlayerDtoResponse;
 import com.example.chess.entity.Player;
@@ -10,14 +11,7 @@ import java.util.List;
 import java.util.Set;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/players")
@@ -136,4 +130,19 @@ public class PlayerController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<PlayerDtoResponse> updatePlayer(
+            @PathVariable Long id,
+            @RequestBody PlayerDtoRequest playerDtoRequest) {
+        try {
+            PlayerDtoResponse updatedPlayer = playerService.updatePlayerById(id, playerDtoRequest);
+            return ResponseEntity.ok(updatedPlayer);
+        } catch (InvalidParamException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
 }

@@ -40,11 +40,11 @@ public class Player {
     @Column(nullable = false)
     private String name;
 
-    @OneToMany(mappedBy = "whitePlayer", cascade = {CascadeType.PERSIST, CascadeType.MERGE},
+    @OneToMany(mappedBy = "whitePlayer", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE},
             fetch = FetchType.LAZY, orphanRemoval = true)
     private List<GameInfo> gamesAsWhitePlayer = new ArrayList<>();
 
-    @OneToMany(mappedBy = "blackPlayer", cascade = {CascadeType.PERSIST, CascadeType.MERGE},
+    @OneToMany(mappedBy = "blackPlayer", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE},
             fetch = FetchType.LAZY, orphanRemoval = true)
     private List<GameInfo> gamesAsBlackPlayer = new ArrayList<>();
 

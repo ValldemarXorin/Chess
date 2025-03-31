@@ -11,6 +11,7 @@ import com.example.chess.mappers.GameInfoMapper;
 import com.example.chess.mappers.PlayerMapper;
 import com.example.chess.repository.PlayerRepository;
 import com.example.chess.service.PlayerService;
+import com.example.chess.utils.Cache;
 import com.example.chess.utils.PasswordUtil;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
@@ -26,15 +27,33 @@ import org.springframework.stereotype.Service;
 public class PlayerServiceImpl implements PlayerService {
 
     private final PlayerRepository playerRepository;
+    private final Cache<Long, Player> playerCache;
 
-    public PlayerServiceImpl(PlayerRepository playerRepository) {
+    public PlayerServiceImpl(PlayerRepository playerRepository,
+                             Cache<Long, Player> playerCache) {
         this.playerRepository = playerRepository;
+        this.playerCache = playerCache;
+    }
+
+    @Override
+    public Player getCachedPlayerById(long id) throws NotFoundException {
+        Player cachedPlayer = playerCache.getValue(id);
+        if (cachedPlayer != null) {
+            return cachedPlayer;
+        }
+
+        // Если в кеше нет, берем из БД
+        Player player = playerRepository.findById(id).orElseThrow(NotFoundException::new);
+
+        // Сохраняем в кеш
+        playerCache.putValue(id, player);
+        return player;
     }
 
     @Override
     public PlayerDtoResponse getPlayerById(long id) throws NotFoundException {
-        Optional<Player> player = playerRepository.findById(id);
-        return player.map(PlayerMapper::toDto).orElseThrow(NotFoundException::new);
+        Player player = getCachedPlayerById(id);
+        return PlayerMapper.toDto(player);
     }
 
     @Override
@@ -86,7 +105,11 @@ public class PlayerServiceImpl implements PlayerService {
     @Override
     @Transactional
     public List<GameInfoDtoResponse> getAllGamesInfo(Long id) throws InvalidParamException {
-        playerRepository.findById(id).orElseThrow(InvalidParamException::new);
+        try {
+            getCachedPlayerById(id);
+        } catch (NotFoundException e) {
+            throw new InvalidParamException();
+        }
         List<GameInfo> gamesInfo =
                 Stream.concat(playerRepository.findAllGamesInfoAsWhitePlayer(id).stream(),
                 playerRepository.findAllGamesInfoAsBlackPlayer(id).stream())
@@ -127,7 +150,11 @@ public class PlayerServiceImpl implements PlayerService {
 
     @Override
     public Set<PlayerDtoResponse> getFriendRequests(long id) throws InvalidParamException {
-        playerRepository.findById(id).orElseThrow(InvalidParamException::new);
+        try {
+            getCachedPlayerById(id);
+        } catch (NotFoundException e) {
+            throw new InvalidParamException();
+        }
         return playerRepository.findAllFriendsRequests(id).stream().map(PlayerMapper::toDto)
                 .collect(Collectors.toSet());
     }
@@ -186,6 +213,7 @@ public class PlayerServiceImpl implements PlayerService {
         playerRepository.deleteFriendshipsByPlayerId(id);
         playerRepository.deleteFriendRequestsByPlayerId(id);
         playerRepository.delete(player);
+        playerCache.remove(id);
         return PlayerMapper.toDto(player);
     }
 
@@ -200,6 +228,7 @@ public class PlayerServiceImpl implements PlayerService {
         player.setEmail(playerDtoRequest.getEmail());
         player.setHashPassword(PasswordUtil.hashPassword(playerDtoRequest.getPassword()));
         playerRepository.save(player);
+        playerCache.putValue(id, player);
         return PlayerMapper.toDto(player);
     }
 }

@@ -13,6 +13,8 @@ public interface PlayerService {
     public PlayerDtoResponse getPlayerById(long id)
             throws NotFoundException;
 
+    public Player getCachedPlayerById(long id) throws NotFoundException;
+
     public List<PlayerDtoResponse> getPlayersByNameAndEmail(String name, String email)
             throws NotFoundException;
 

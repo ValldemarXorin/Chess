@@ -32,14 +32,16 @@ public class Rook extends Piece {
         }
 
         for (int i = this.getCoordX() + directionX; i != this.getCoordX(); i += directionX) {
-            // движение по горизонтали. не берем в учет клетку, на которой стоит фигура (поэтому + directionX)
+            // движение по горизонтали. не берем в учет клетку,
+            // на которой стоит фигура (поэтому + directionX)
             if (board.getPieceAt(i, this.getCoordY()) != null) {
                 return false;
             }
         }
 
         for (int j = this.getCoordY() + directionY; j != this.getCoordY(); j += directionY) {
-            // движение по вертикали. не берем в учет клетку, на которой стоит фигура (поэтому + directionY)
+            // движение по вертикали. не берем в учет клетку,
+            // на которой стоит фигура (поэтому + directionY)
             if (board.getPieceAt(this.getCoordX(), j) != null) {
                 return false;
             }

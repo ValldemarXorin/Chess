@@ -1,14 +1,18 @@
 package com.example.chess.controller;
 
 import com.example.chess.dto.request.PlayerDtoRequest;
+import com.example.chess.dto.request.PlayerFilterRequest;
 import com.example.chess.dto.response.GameInfoDtoResponse;
 import com.example.chess.dto.response.PlayerDtoResponse;
 import com.example.chess.entity.Player;
 import com.example.chess.exception.InvalidParamException;
 import com.example.chess.exception.NotFoundException;
+import com.example.chess.mappers.PlayerMapper;
 import com.example.chess.service.PlayerService;
 import java.util.List;
 import java.util.Set;
+
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -145,4 +149,10 @@ public class PlayerController {
         }
     }
 
+    @GetMapping("/filter")
+    public ResponseEntity<Page<PlayerDtoResponse>> filterPlayers(
+            @ModelAttribute PlayerFilterRequest filter
+    ) {
+        return ResponseEntity.ok(playerService.getPlayersByFilters(filter));
+    }
 }

@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 public class Cache<K, V> {
     private final Logger logger = LoggerFactory.getLogger(Cache.class);
 
-    private final Map<K, Node> cache;
+    private final Map<K, Node> mainCache;
     private final Map<Long, LinkedHashSet<K>> frequencyMap;
     private final int capacity;
     private long minFrequency;
@@ -38,41 +38,41 @@ public class Cache<K, V> {
     }
 
     public V getValue(K key) {
-        if (!cache.containsKey(key)) {
+        if (!mainCache.containsKey(key)) {
             return null;
         }
-        Node node = cache.get(key);
+        Node node = mainCache.get(key);
         updateFrequency(key, node);
         return node.value;
     }
 
     public void putValue(K key, V value) throws IllegalStateException {
 
-        Node existingNode = cache.computeIfPresent(key, (k, node) -> {
+        Node existingNode = mainCache.computeIfPresent(key, (k, node) -> {
             node.setValue(value);
             updateFrequency(key, node);
-            logger.info("Successful updating data for key: " + key + " with value: " + value);
+            logger.info("Successful updating data for key: {} with value: {}", key, value);
             return node;
         });
 
         if (existingNode != null) {
-            logger.info(String.format("Node with key %s already exists", key));
+            logger.info("Node with key {} already exists", key);
             return;
         }
         
         if (isEvictionNeed()) {
             evict();
-            logger.info(String.format("Successful evict"));
+            logger.info("Successful evict");
         }
 
-        cache.put(key, new Node(value));
+        mainCache.put(key, new Node(value));
         frequencyMap.computeIfAbsent(1L, k -> new LinkedHashSet<>()).add(key);
         minFrequency = 1;
-        logger.info(String.format("Putting %s to %s", key, value));
+        logger.info("Putting {} to {}", key, value);
     }
 
     public boolean isEvictionNeed() {
-        return cache.size() >= capacity;
+        return mainCache.size() >= capacity;
     }
 
     public void evict() {
@@ -85,17 +85,17 @@ public class Cache<K, V> {
         if (frequencyMap.get(minFrequency).isEmpty()) {
             frequencyMap.remove(minFrequency);
         }
-        cache.remove(keyToRemove);
-        logger.info(String.format("Removing %s", keyToRemove));
+        mainCache.remove(keyToRemove);
+        logger.info("Removing {}", keyToRemove);
     }
 
 
     public void remove(K key) {
-        if (!cache.containsKey(key)) {
-            logger.warn(String.format("Key %s doesnt exist ", key));
+        if (!mainCache.containsKey(key)) {
+            logger.warn("Key {} doesnt exist ", key);
         }
 
-        Node node = cache.remove(key);
+        Node node = mainCache.remove(key);
         long freq = node.getFrequency();
 
         LinkedHashSet<K> keys = frequencyMap.get(freq);
@@ -103,7 +103,7 @@ public class Cache<K, V> {
         if (keys.isEmpty()) {
             frequencyMap.remove(freq);
         }
-        logger.info("Removed key: " + key);
+        logger.info("Removed key: {}", key);
     }
 
     private void updateFrequency(K key, Node node) {
@@ -120,19 +120,19 @@ public class Cache<K, V> {
         }
 
         frequencyMap.computeIfAbsent(node.getFrequency(), k -> new LinkedHashSet<>()).add(key);
-        logger.info(String.format("Updating frequency %s to %s", key, node.getFrequency()));
+        logger.info("Updating frequency {} to {}", key, node.getFrequency());
     }
 
     public void clear() {
-        cache.clear();
+        mainCache.clear();
         logger.info("Cache cleared.");
     }
 
     public Cache(@Value("${cache.max-size:52428800}") int capacity) {
         this.capacity = capacity;
-        this.cache = new ConcurrentHashMap<>();
+        this.mainCache = new ConcurrentHashMap<>();
         this.frequencyMap = new ConcurrentHashMap<>();
-        this.logger.info("Cache created with capacity: " + capacity);
+        this.logger.info("Cache created with capacity: {}", capacity);
         this.minFrequency = 1;
     }
 }

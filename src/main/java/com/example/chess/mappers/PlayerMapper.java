@@ -3,6 +3,10 @@ package com.example.chess.mappers;
 import com.example.chess.dto.request.PlayerDtoRequest;
 import com.example.chess.dto.response.PlayerDtoResponse;
 import com.example.chess.entity.Player;
+import lombok.Builder;
+import lombok.Data;
+import org.springframework.data.domain.Page;
+
 
 public class PlayerMapper {
 

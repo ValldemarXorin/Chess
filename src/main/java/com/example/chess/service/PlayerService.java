@@ -1,11 +1,14 @@
 package com.example.chess.service;
 
 import com.example.chess.dto.request.PlayerDtoRequest;
+import com.example.chess.dto.request.PlayerFilterRequest;
 import com.example.chess.dto.response.GameInfoDtoResponse;
 import com.example.chess.dto.response.PlayerDtoResponse;
 import com.example.chess.entity.Player;
 import com.example.chess.exception.InvalidParamException;
 import com.example.chess.exception.NotFoundException;
+import org.springframework.data.domain.Page;
+
 import java.util.List;
 import java.util.Set;
 
@@ -44,4 +47,6 @@ public interface PlayerService {
 
     public PlayerDtoResponse updatePlayerById(long id, PlayerDtoRequest playerDtoRequest)
             throws InvalidParamException;
+
+    public Page<PlayerDtoResponse> getPlayersByFilters(PlayerFilterRequest filter);
 }

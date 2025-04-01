@@ -1,6 +1,7 @@
 package com.example.chess.service.implementation;
 
 import com.example.chess.dto.request.PlayerDtoRequest;
+import com.example.chess.dto.request.PlayerFilterRequest;
 import com.example.chess.dto.response.GameInfoDtoResponse;
 import com.example.chess.dto.response.PlayerDtoResponse;
 import com.example.chess.entity.GameInfo;
@@ -21,6 +22,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -230,5 +235,34 @@ public class PlayerServiceImpl implements PlayerService {
         playerRepository.save(player);
         playerCache.putValue(id, player);
         return PlayerMapper.toDto(player);
+    }
+
+    @Override
+    public Page<PlayerDtoResponse> getPlayersByFilters(PlayerFilterRequest filter) {
+
+        PageRequest pageable = PageRequest.of(filter.getPage(), filter.getSize());
+        Page<Player> playerPage;
+
+        if (filter.getStatus() != null && (filter.getEndTimeFrom() != null || filter.getEndTimeTo() != null)) {
+            playerPage = playerRepository.findPlayersByFilters(
+                    filter.getStatus(),
+                    filter.getEndTimeFrom(),
+                    filter.getEndTimeTo(),
+                    pageable
+            );
+        } else if (filter.getStatus() != null) {
+            List<Player> players = playerRepository.findPlayersByGameStatus(filter.getStatus());
+            playerPage = new PageImpl<>(players, pageable, players.size());
+        } else if (filter.getEndTimeFrom() != null || filter.getEndTimeTo() != null) {
+            List<Player> players = playerRepository.findPlayersByGameEndTimeRange(
+                    filter.getEndTimeFrom(),
+                    filter.getEndTimeTo()
+            );
+            playerPage = new PageImpl<>(players, pageable, players.size());
+        } else {
+            playerPage = playerRepository.findAll(pageable);
+        }
+
+        return playerPage.map(PlayerMapper::toDto);
     }
 }

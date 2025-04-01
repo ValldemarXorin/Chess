@@ -31,13 +31,6 @@ public class Queen extends Piece {
             directionY = directionY > 0 ? 1 : -1;
         }
 
-        for (int i = this.getCoordX() + directionX; i != endX && directionY == 0; i += directionX) {
-            // движение по горизонтали
-            if (board.getPieceAt(i, this.getCoordY()) != null) {
-                return false;
-            }
-        }
-
         // добавить обход циклов
 
         return true;

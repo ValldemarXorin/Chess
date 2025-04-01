@@ -41,4 +41,5 @@ public abstract class Piece {
     }
 
     // надо подумать над реализацией копироавния фигуры
+    public abstract Piece copy();
 }

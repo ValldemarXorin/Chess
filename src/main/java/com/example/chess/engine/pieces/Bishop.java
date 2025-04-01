@@ -33,4 +33,8 @@ public class Bishop extends Piece {
         return true;
     }
 
+    @Override
+    public Piece copy() {
+        return new Bishop(this.getColor(), this.getCoordX(), this.getCoordY());
+    }
 }

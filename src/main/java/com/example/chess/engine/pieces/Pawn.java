@@ -74,4 +74,8 @@ public class Pawn extends Piece {
         this.setCoordY(endY);
     }
 
+    @Override
+    public Piece copy() {
+        return new Pawn(this.getColor(), this.getCoordX(), this.getCoordY());
+    }
 }

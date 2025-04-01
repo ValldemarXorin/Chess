@@ -24,4 +24,8 @@ public class Horse extends Piece {
                 || (Math.abs(distanceX) == 1 && Math.abs(distanceY) == 2));
     }
 
+    @Override
+    public Piece copy() {
+        return new Horse(this.getColor(), this.getCoordX(), this.getCoordY());
+    }
 }

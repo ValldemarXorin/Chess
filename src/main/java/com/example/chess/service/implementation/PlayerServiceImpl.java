@@ -22,7 +22,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -47,10 +46,8 @@ public class PlayerServiceImpl implements PlayerService {
             return cachedPlayer;
         }
 
-        // Если в кеше нет, берем из БД
         Player player = playerRepository.findById(id).orElseThrow(NotFoundException::new);
 
-        // Сохраняем в кеш
         playerCache.putValue(id, player);
         return player;
     }
@@ -218,7 +215,9 @@ public class PlayerServiceImpl implements PlayerService {
         playerRepository.deleteFriendshipsByPlayerId(id);
         playerRepository.deleteFriendRequestsByPlayerId(id);
         playerRepository.delete(player);
-        playerCache.remove(id);
+        if (playerCache.getValue(id) != null) {
+            playerCache.remove(id);
+        }
         return PlayerMapper.toDto(player);
     }
 
@@ -243,21 +242,18 @@ public class PlayerServiceImpl implements PlayerService {
         PageRequest pageable = PageRequest.of(filter.getPage(), filter.getSize());
         Page<Player> playerPage;
 
-        if (filter.getStatus() != null && (filter.getEndTimeFrom() != null || filter.getEndTimeTo() != null)) {
+        if (filter.getStatus() != null && filter.getNotes() != null) {
             playerPage = playerRepository.findPlayersByFilters(
                     filter.getStatus(),
-                    filter.getEndTimeFrom(),
-                    filter.getEndTimeTo(),
+                    filter.getNotes(),
                     pageable
             );
         } else if (filter.getStatus() != null) {
             List<Player> players = playerRepository.findPlayersByGameStatus(filter.getStatus());
             playerPage = new PageImpl<>(players, pageable, players.size());
-        } else if (filter.getEndTimeFrom() != null || filter.getEndTimeTo() != null) {
-            List<Player> players = playerRepository.findPlayersByGameEndTimeRange(
-                    filter.getEndTimeFrom(),
-                    filter.getEndTimeTo()
-            );
+        } else if (filter.getNotes() != null) {
+            List<Player> players = playerRepository
+                    .findPlayersByGameNotesContaining(filter.getNotes());
             playerPage = new PageImpl<>(players, pageable, players.size());
         } else {
             playerPage = playerRepository.findAll(pageable);

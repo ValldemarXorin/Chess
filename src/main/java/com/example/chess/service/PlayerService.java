@@ -7,10 +7,9 @@ import com.example.chess.dto.response.PlayerDtoResponse;
 import com.example.chess.entity.Player;
 import com.example.chess.exception.InvalidParamException;
 import com.example.chess.exception.NotFoundException;
-import org.springframework.data.domain.Page;
-
 import java.util.List;
 import java.util.Set;
+import org.springframework.data.domain.Page;
 
 public interface PlayerService {
     public PlayerDtoResponse getPlayerById(long id)

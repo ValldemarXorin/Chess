@@ -23,4 +23,9 @@ public class King extends Piece {
 
         return board.getPieceAt(endX, endY) == null;
     }
+
+    @Override
+    public Piece copy() {
+        return new King(this.getColor(), this.getCoordX(), this.getCoordY());
+    }
 }

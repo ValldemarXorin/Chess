@@ -26,11 +26,8 @@ public abstract class Piece {
 
         Board boardCopy = new Board(board);
         boardCopy.setPieceAt(targetPiece.getCoordX(), targetPiece.getCoordY(), null);
-        if (!isLegalMove(targetPiece.getCoordX(), targetPiece.getCoordY(), boardCopy)) {
-            return false;
-        }
 
-        return true;
+        return isLegalMove(targetPiece.getCoordX(), targetPiece.getCoordY(), boardCopy);
     }
 
     public void moveDone(int endX, int endY) {
@@ -43,5 +40,5 @@ public abstract class Piece {
                 || (this.getCoordX() == endX && this.getCoordY() == endY);
     }
 
-    public abstract Piece clone();
+    // надо подумать над реализацией копироавния фигуры
 }

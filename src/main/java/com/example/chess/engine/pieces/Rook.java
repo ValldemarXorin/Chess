@@ -50,8 +50,4 @@ public class Rook extends Piece {
         return true;
     }
 
-    @Override
-    public Piece clone() {
-        return new Rook(this.getColor(), this.getCoordX(), this.getCoordY());
-    }
 }

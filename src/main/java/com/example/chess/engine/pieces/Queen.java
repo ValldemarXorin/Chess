@@ -59,8 +59,4 @@ public class Queen extends Piece {
         return true;
     }
 
-    @Override
-    public Piece clone() {
-        return new Queen(this.getColor(), this.getCoordX(), this.getCoordY());
-    }
 }

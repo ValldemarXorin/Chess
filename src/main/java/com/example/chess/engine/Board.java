@@ -33,7 +33,7 @@ public class Board {
 
         for (int x = 0; x < 8; x++) {
             for (int y = 0; y < 8; y++) {
-                Piece piece = this.field[x][y].clone();
+                Piece piece = this.field[x][y];
                 if (piece != null) {
                     this.setPieceAt(x, y, piece); // тут должен быть клон piece
                 } else {

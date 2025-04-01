@@ -7,7 +7,6 @@ import com.example.chess.dto.response.PlayerDtoResponse;
 import com.example.chess.entity.Player;
 import com.example.chess.exception.InvalidParamException;
 import com.example.chess.exception.NotFoundException;
-import com.example.chess.mappers.PlayerMapper;
 import com.example.chess.service.PlayerService;
 import java.util.List;
 import java.util.Set;

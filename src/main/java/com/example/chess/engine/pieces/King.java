@@ -21,15 +21,6 @@ public class King extends Piece {
             return false;
         }
 
-        if (board.getPieceAt(endX, endY) != null) {
-            return false;
-        }
-
-        return true;
-    }
-
-    @Override
-    public Piece clone() {
-        return new King(this.getColor(), this.getCoordX(), this.getCoordY());
+        return board.getPieceAt(endX, endY) == null;
     }
 }

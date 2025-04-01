@@ -16,7 +16,7 @@ public class Bishop extends Piece {
             return false;
         }
 
-        if (!(Math.abs(endX - this.getCoordX()) == Math.abs(endY - this.getCoordY()))) {
+        if (Math.abs(endX - this.getCoordX()) != Math.abs(endY - this.getCoordY())) {
             return false;
         }
 
@@ -33,8 +33,4 @@ public class Bishop extends Piece {
         return true;
     }
 
-    @Override
-    public Piece clone() {
-        return new Bishop(this.getColor(), this.getCoordX(), this.getCoordY());
-    }
 }

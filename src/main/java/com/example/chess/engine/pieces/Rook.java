@@ -31,21 +31,7 @@ public class Rook extends Piece {
             directionY = directionY > 0 ? 1 : -1;
         }
 
-        for (int i = this.getCoordX() + directionX; i != this.getCoordX(); i += directionX) {
-            // движение по горизонтали. не берем в учет клетку,
-            // на которой стоит фигура (поэтому + directionX)
-            if (board.getPieceAt(i, this.getCoordY()) != null) {
-                return false;
-            }
-        }
-
-        for (int j = this.getCoordY() + directionY; j != this.getCoordY(); j += directionY) {
-            // движение по вертикали. не берем в учет клетку,
-            // на которой стоит фигура (поэтому + directionY)
-            if (board.getPieceAt(this.getCoordX(), j) != null) {
-                return false;
-            }
-        }
+        // добавить циклы обхода
 
         return true;
     }

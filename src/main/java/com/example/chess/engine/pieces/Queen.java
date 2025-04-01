@@ -38,23 +38,7 @@ public class Queen extends Piece {
             }
         }
 
-        for (int j = this.getCoordY() + directionY; j != endY
-                && directionX == 0; j += directionY) {
-            if (board.getPieceAt(this.getCoordX(), j) != null) {
-                return false;
-            }
-        }
-
-        for (int i = this.getCoordX() + directionX, j = this.getCoordY() + directionY;
-                i != endX && j != endY; i += directionX, j += directionY) {
-            // в условии цикла добавлен j != endY. он не нужен, добавлен
-            // для большей читаемости и понимания происходящего
-            // выход из цикла можно отслеживать по оному из этих параметров
-            // (i != endX или j != endY)
-            if (board.getPieceAt(i, j) != null) {
-                return false;
-            }
-        }
+        // добавить обход циклов
 
         return true;
     }

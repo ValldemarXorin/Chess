@@ -24,12 +24,8 @@ public class Rook extends Piece {
             return false;
         }
 
-        if (!(endX - this.getCoordX() == 0 && endY - this.getCoordY() != 0
-                || endX - this.getCoordX() != this.getCoordX() && endY - this.getCoordY() == 0)) {
-            return false;
-        }
-
-        return true;
+        return (endX - this.getCoordX() == 0 && endY - this.getCoordY() != 0)
+                || (endX - this.getCoordX() != 0 && endY - this.getCoordY() == 0);
     }
 
     @Override

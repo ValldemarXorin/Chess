@@ -16,13 +16,10 @@ public class Queen extends Piece {
             return false;
         }
 
-        if (!(endX - this.getCoordX() != 0 && endY - this.getCoordY() == 0
-                || endX - this.getCoordX() == 0 && endY - this.getCoordY() != 0
-                || Math.abs(endX - this.getCoordX()) == Math.abs(endY - this.getCoordY()))) {
-            return false;
-        }
-
-        return true;
+        // For Queen's movement (horizontal, vertical, or diagonal)
+        return (endX - this.getCoordX() == 0 && endY - this.getCoordY() != 0)  // vertical
+                || (endX - this.getCoordX() != 0 && endY - this.getCoordY() == 0)  // horizontal
+                || (Math.abs(endX - this.getCoordX()) == Math.abs(endY - this.getCoordY()));  // diagonal
     }
 
     @Override

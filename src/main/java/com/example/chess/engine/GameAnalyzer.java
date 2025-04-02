@@ -50,7 +50,7 @@ public final class GameAnalyzer {
         for (Move move : pieceMoves) {
             Board clonedBoard = new Board(board);
             clonedBoard.setPieceAt(piece.getCoordX(), piece.getCoordY(), null);
-            clonedBoard.setPieceAt(move.getEndX(), move.getEndY(), piece);
+            // тут был clonedBoard.setPieceAt(move.getEndX(), move.getEndY(), piece);
             if (isCheck(piece.getColor(), clonedBoard)) {
                 return true;
             }

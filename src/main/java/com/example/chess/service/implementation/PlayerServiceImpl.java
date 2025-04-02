@@ -22,6 +22,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -178,12 +179,8 @@ public class PlayerServiceImpl implements PlayerService {
                 || !sender.getFriendRequests().contains(recipient)) {
             throw new InvalidParamException(); // переписать новый тип исключения
         }
-        if (recipient.getFriendRequests().contains(sender)) {
-            recipient.getFriendRequests().remove(sender);
-        }
-        if (sender.getFriendRequests().contains(recipient)) {
-            sender.getFriendRequests().remove(recipient);
-        }
+        recipient.getFriendRequests().remove(sender);
+        sender.getFriendRequests().remove(recipient);
         sender.getFriends().add(recipient);
         recipient.getFriends().add(sender);
         return PlayerMapper.toDto(recipient);

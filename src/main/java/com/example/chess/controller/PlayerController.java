@@ -162,10 +162,16 @@ public class PlayerController {
     public ResponseEntity<Page<PlayerDtoResponse>> filterPlayers(
             @ModelAttribute PlayerFilterRequest filter
     ) {
-        return ResponseEntity.ok(playerService.getPlayersByFilters(filter));
+        try {
+            return ResponseEntity.ok(playerService.getPlayersByFilters(filter));
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
-    @PutMapping("/aproove_request/{senderId}")
+    @PostMapping("/{senderId}/aproove_request")
     public ResponseEntity<PlayerDtoResponse> approveFriendRequest(
             @PathVariable Long senderId,
             @RequestParam String recipientEmail) {

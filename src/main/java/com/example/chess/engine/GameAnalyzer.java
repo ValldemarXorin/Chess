@@ -41,20 +41,6 @@ public final class GameAnalyzer {
     public static boolean isPiecePinned(Piece piece, Board board) {
         King king = board.getKing(piece.getColor());
 
-        if (king == null) {
-            return false;
-        }
-
-        Allocation pieceAllocation = new Allocation(piece);
-        List<Move> pieceMoves = pieceAllocation.calculateAllMoves(board);
-        for (Move move : pieceMoves) {
-            Board clonedBoard = new Board(board);
-            clonedBoard.setPieceAt(piece.getCoordX(), piece.getCoordY(), null);
-            // тут был clonedBoard.setPieceAt(move.getEndX(), move.getEndY(), piece);
-            if (isCheck(piece.getColor(), clonedBoard)) {
-                return true;
-            }
-        }
-        return false;
+        return king == null;
     }
 }

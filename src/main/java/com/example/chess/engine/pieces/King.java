@@ -28,4 +28,8 @@ public class King extends Piece {
     public Piece copy() {
         return new King(this.getColor(), this.getCoordX(), this.getCoordY());
     }
+
+    public boolean isCastlingPossible(Board board) {
+        return board.getPieceAt(this.getCoordX(), this.getCoordY()) == null;
+    }
 }

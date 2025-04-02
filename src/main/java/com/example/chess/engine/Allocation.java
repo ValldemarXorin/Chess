@@ -25,8 +25,7 @@ public class Allocation {
             for (int j = 0; j < 8; j++) {
                 if ((chosenPiece.isLegalMove(i, j, board) || chosenPiece.isLegalMove(j, i, board))
                     && !GameAnalyzer.isCheck(chosenPiece.getColor(), board)) {
-                    moves.add(new Move(chosenPiece, chosenPiece.getCoordX(),
-                            chosenPiece.getCoordY(), i, j));
+                    // дописать добавление в лист ходов
                 }
             }
         }

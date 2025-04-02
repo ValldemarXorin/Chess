@@ -33,7 +33,7 @@ public class Board {
 
         for (int x = 0; x < 8; x++) {
             for (int y = 0; y < 8; y++) {
-                Piece piece = this.field[x][y];
+                Piece piece = this.field[x][y].copy();
                 if (piece != null) {
                     this.setPieceAt(x, y, piece); // тут должен быть клон piece
                 } else {
@@ -55,40 +55,6 @@ public class Board {
             throw new IllegalArgumentException("Coordinates are out of bounds");
         }
         field[x][y] = piece;
-    }
-
-    public void movePiece(int x, int y, Piece piece) throws IllegalMove {
-        // Проверка допустимости хода
-        Move pieceMove = new Move(piece, piece.getCoordX(), piece.getCoordY(), x, y);
-        Allocation pieceAllocation = new Allocation(piece);
-        List<Move> legalMoves = pieceAllocation.calculateAllMoves(this);
-
-        if (!legalMoves.contains(pieceMove)) {
-            throw new IllegalMove();
-        }
-
-        // Проверка связки
-        if (GameAnalyzer.isPiecePinned(piece, this)) {
-            throw new IllegalMove();
-        }
-
-        // Проверка захвата или обычного хода
-        Piece targetPiece = getPieceAt(x, y);
-        if (targetPiece != null) {
-            if (!piece.isLegalCapture(targetPiece, this)) {
-                throw new IllegalMove();
-            }
-        } else {
-            if (!piece.isLegalMove(x, y, this)) {
-                throw new IllegalMove();
-            }
-        }
-
-        // Выполнение хода
-        setPieceAt(piece.getCoordX(), piece.getCoordY(), null);
-        setPieceAt(x, y, piece);
-        piece.setCoordX(x);
-        piece.setCoordY(y);
     }
 
     private void initializeBoard() {

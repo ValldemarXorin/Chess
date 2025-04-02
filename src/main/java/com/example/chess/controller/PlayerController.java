@@ -164,4 +164,18 @@ public class PlayerController {
     ) {
         return ResponseEntity.ok(playerService.getPlayersByFilters(filter));
     }
+
+    @PutMapping("/aproove_request/{senderId}")
+    public ResponseEntity<PlayerDtoResponse> approveFriendRequest(
+            @PathVariable Long senderId,
+            @RequestParam String recipientEmail) {
+        try {
+            PlayerDtoResponse approvedFriend = playerService.addFriend(senderId, recipientEmail);
+            return ResponseEntity.ok(approvedFriend);
+        } catch (InvalidParamException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 }

@@ -3,7 +3,6 @@ package com.example.chess.repository;
 import com.example.chess.entity.GameInfo;
 import com.example.chess.entity.Player;
 import jakarta.transaction.Transactional;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;

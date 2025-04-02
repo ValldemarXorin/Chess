@@ -47,5 +47,6 @@ public interface PlayerService {
     public PlayerDtoResponse updatePlayerById(long id, PlayerDtoRequest playerDtoRequest)
             throws InvalidParamException;
 
-    public Page<PlayerDtoResponse> getPlayersByFilters(PlayerFilterRequest filter);
+    public Page<PlayerDtoResponse> getPlayersByFilters(PlayerFilterRequest filter)
+            throws NotFoundException;
 }

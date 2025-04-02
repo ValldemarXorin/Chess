@@ -20,7 +20,7 @@ public abstract class Piece {
     // 4. проверка на возможность хода фигуры (не мешает ли другая фигура)
 
     public boolean isLegalCapture(Piece targetPiece, Board board) {
-        if (targetPiece == null) {
+        if (targetPiece == null || targetPiece.getColor() == this.color) {
             return false;
         }
 

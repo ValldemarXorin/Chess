@@ -22,6 +22,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -177,8 +178,12 @@ public class PlayerServiceImpl implements PlayerService {
                 || !sender.getFriendRequests().contains(recipient)) {
             throw new InvalidParamException(); // переписать новый тип исключения
         }
-        sender.getFriendRequests().remove(recipient);
-        recipient.getFriendRequests().remove(sender);
+        if (recipient.getFriendRequests().contains(sender)) {
+            recipient.getFriendRequests().remove(sender);
+        }
+        if (sender.getFriendRequests().contains(recipient)) {
+            sender.getFriendRequests().remove(recipient);
+        }
         sender.getFriends().add(recipient);
         recipient.getFriends().add(sender);
         return PlayerMapper.toDto(recipient);
@@ -237,28 +242,38 @@ public class PlayerServiceImpl implements PlayerService {
     }
 
     @Override
-    public Page<PlayerDtoResponse> getPlayersByFilters(PlayerFilterRequest filter) {
+    public Page<PlayerDtoResponse> getPlayersByFilters(PlayerFilterRequest filter)
+            throws NotFoundException {
 
         PageRequest pageable = PageRequest.of(filter.getPage(), filter.getSize());
         Page<Player> playerPage;
 
-        if (filter.getStatus() != null && filter.getNotes() != null) {
-            playerPage = playerRepository.findPlayersByFilters(
-                    filter.getStatus(),
-                    filter.getNotes(),
-                    pageable
-            );
-        } else if (filter.getStatus() != null) {
-            List<Player> players = playerRepository.findPlayersByGameStatus(filter.getStatus());
-            playerPage = new PageImpl<>(players, pageable, players.size());
-        } else if (filter.getNotes() != null) {
-            List<Player> players = playerRepository
-                    .findPlayersByGameNotesContaining(filter.getNotes());
-            playerPage = new PageImpl<>(players, pageable, players.size());
-        } else {
-            playerPage = playerRepository.findAll(pageable);
-        }
+        try {
+            if (filter.getStatus() != null && filter.getNotes() != null) {
+                playerPage = playerRepository.findPlayersByFilters(
+                        filter.getStatus(),
+                        filter.getNotes(),
+                        pageable
+                );
+            } else if (filter.getStatus() != null) {
+                List<Player> players = playerRepository.findPlayersByGameStatus(filter.getStatus());
+                playerPage = new PageImpl<>(players, pageable, players.size());
+            } else if (filter.getNotes() != null) {
+                List<Player> players = playerRepository
+                        .findPlayersByGameNotesContaining(filter.getNotes());
+                playerPage = new PageImpl<>(players, pageable, players.size());
+            } else {
+                playerPage = playerRepository.findAll(pageable);
+            }
 
-        return playerPage.map(PlayerMapper::toDto);
+            if (playerPage.isEmpty()) {
+                throw new NotFoundException();
+            }
+
+            return playerPage.map(PlayerMapper::toDto);
+
+        } catch (EmptyResultDataAccessException e) {
+            throw new NotFoundException();
+        }
     }
 }

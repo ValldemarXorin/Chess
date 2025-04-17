@@ -1,18 +1,17 @@
 package com.example.chess.service.implementation;
 
-import com.example.chess.dto.request.PlayerDtoRequest;
+import com.example.chess.dto.request.PlayerRequest;
 import com.example.chess.dto.request.PlayerFilterRequest;
-import com.example.chess.dto.response.GameInfoDtoResponse;
-import com.example.chess.dto.response.PlayerDtoResponse;
+import com.example.chess.dto.response.GameInfoResponse;
+import com.example.chess.dto.response.PlayerResponse;
 import com.example.chess.entity.GameInfo;
 import com.example.chess.entity.Player;
-import com.example.chess.exception.InvalidParamException;
-import com.example.chess.exception.NotFoundException;
+import com.example.chess.exception.ConflictException;
+import com.example.chess.exception.ResourceNotFoundException;
 import com.example.chess.mappers.GameInfoMapper;
 import com.example.chess.mappers.PlayerMapper;
 import com.example.chess.repository.PlayerRepository;
 import com.example.chess.service.PlayerService;
-import com.example.chess.utils.Cache;
 import com.example.chess.utils.PasswordUtil;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
@@ -22,6 +21,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -30,38 +31,22 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class PlayerServiceImpl implements PlayerService {
-
     private final PlayerRepository playerRepository;
-    private final Cache<Long, Player> playerCache;
+    private final Logger logger = LoggerFactory.getLogger(PlayerServiceImpl.class);
 
-    public PlayerServiceImpl(PlayerRepository playerRepository,
-                             Cache<Long, Player> playerCache) {
+    public PlayerServiceImpl(PlayerRepository playerRepository) {
         this.playerRepository = playerRepository;
-        this.playerCache = playerCache;
     }
 
     @Override
-    public Player getCachedPlayerById(long id) throws NotFoundException {
-        Player cachedPlayer = playerCache.getValue(id);
-        if (cachedPlayer != null) {
-            return cachedPlayer;
-        }
-
-        Player player = playerRepository.findById(id).orElseThrow(NotFoundException::new);
-
-        playerCache.putValue(id, player);
-        return player;
-    }
-
-    @Override
-    public PlayerDtoResponse getPlayerById(long id) throws NotFoundException {
-        Player player = getCachedPlayerById(id);
+    public PlayerResponse getPlayerById(long id) throws ResourceNotFoundException {
+        Player player = playerRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Player not found"));
         return PlayerMapper.toDto(player);
     }
 
     @Override
-    public List<PlayerDtoResponse> getPlayersByNameAndEmail(String name, String email)
-            throws NotFoundException {
+    public List<PlayerResponse> getPlayersByNameAndEmail(String name, String email)
+            throws ResourceNotFoundException {
         List<Player> players = new ArrayList<>();
 
         if (name != null && !name.isEmpty()) {
@@ -77,16 +62,16 @@ public class PlayerServiceImpl implements PlayerService {
         }
 
         if (players.isEmpty()) {
-            throw new NotFoundException();
+            throw new ResourceNotFoundException("Player not found");
         }
 
         return players.stream().map(PlayerMapper::toDto).toList();
     }
 
     @Override
-    public PlayerDtoResponse createPlayer(Player player) throws InvalidParamException {
+    public PlayerResponse createPlayer(Player player) throws ConflictException {
         if (playerRepository.findByEmail(player.getEmail()).isPresent()) {
-            throw new InvalidParamException();
+            throw new ConflictException("Player already exists");
         }
         player.setHashPassword(PasswordUtil.hashPassword(player.getHashPassword()));
         playerRepository.save(player);
@@ -94,57 +79,48 @@ public class PlayerServiceImpl implements PlayerService {
     }
 
     @Override
-    public Set<PlayerDtoResponse> getAllFriends(Long id) {
+    public Set<PlayerResponse> getAllFriends(Long id) throws ResourceNotFoundException {
         Set<Player> friends = playerRepository.findAllFriends(id);
-        return friends.stream().map(PlayerMapper::toDto).collect(Collectors.toSet());
-    }
-
-    @Override
-    public Set<PlayerDtoResponse> getAllFriendsByName(String friendName, Long playerId) {
-        Set<Player> friends = playerRepository.findFriendsByPlayerName(friendName, playerId);
-        return friends.stream().map(PlayerMapper::toDto).collect(Collectors.toSet());
-    }
-
-    @Override
-    @Transactional
-    public List<GameInfoDtoResponse> getAllGamesInfo(Long id) throws InvalidParamException {
-        try {
-            getCachedPlayerById(id);
-        } catch (NotFoundException e) {
-            throw new InvalidParamException();
+        if (friends.isEmpty()) {
+            throw new ResourceNotFoundException("Player not found");
         }
-        List<GameInfo> gamesInfo =
-                Stream.concat(playerRepository.findAllGamesInfoAsWhitePlayer(id).stream(),
-                playerRepository.findAllGamesInfoAsBlackPlayer(id).stream())
-                        .toList();
-        List<GameInfo> sortedGamesInfo = gamesInfo.stream()
-                .sorted(Comparator.comparing(GameInfo::getStartTime)).toList();
-        return sortedGamesInfo.stream().map(GameInfoMapper::toDto).toList();
+        return friends.stream().map(PlayerMapper::toDto).collect(Collectors.toSet());
     }
 
     @Override
     @Transactional
-    public PlayerDtoResponse sendFriendRequest(long senderId, String recipientEmail)
-            throws InvalidParamException {
+    public List<GameInfoResponse> getAllGamesInfo(Long id) throws ResourceNotFoundException {
+        Player player;
+        player = playerRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Player not found"));
+        List<GameInfo> gamesInfo = Stream.concat(player.getGamesAsBlackPlayer().stream(),
+                player.getGamesAsWhitePlayer().stream())
+                .sorted(Comparator.comparing(GameInfo::getStartTime)).toList();
+        return gamesInfo.stream().map(GameInfoMapper::toDto).collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public PlayerResponse sendFriendRequest(long senderId, String recipientEmail)
+            throws ConflictException, ResourceNotFoundException {
         Optional<Player> senderOpt = playerRepository.findById(senderId);
         Optional<Player> recipientOpt = playerRepository.findByEmail(recipientEmail);
 
-        senderOpt.orElseThrow(InvalidParamException::new);
-        recipientOpt.orElseThrow(InvalidParamException::new);
+        senderOpt.orElseThrow(() -> new ResourceNotFoundException("Sender not found"));
+        recipientOpt.orElseThrow(() -> new ResourceNotFoundException("Recipient not found"));
 
 
         Player sender = senderOpt.get();
         Player recipient = recipientOpt.get();
 
         if (sender.getFriends().contains(recipient)) {
-            throw new InvalidParamException();
+            throw new ConflictException("You are already friend");
         }
 
         recipient.getFriendRequests().add(sender);
 
         try {
             addFriend(senderId, recipientEmail);
-        } catch (InvalidParamException e) {
+        } catch (ConflictException e) {
             playerRepository.save(sender);
         }
         playerRepository.save(recipient);
@@ -152,31 +128,27 @@ public class PlayerServiceImpl implements PlayerService {
     }
 
     @Override
-    public Set<PlayerDtoResponse> getFriendRequests(long id) throws InvalidParamException {
-        try {
-            getCachedPlayerById(id);
-        } catch (NotFoundException e) {
-            throw new InvalidParamException();
-        }
-        return playerRepository.findAllFriendsRequests(id).stream().map(PlayerMapper::toDto)
-                .collect(Collectors.toSet());
+    public Set<PlayerResponse> getFriendRequests(long id) throws ResourceNotFoundException {
+        Player player;
+        player = playerRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Player not found"));
+        return player.getFriendRequests().stream().map(PlayerMapper::toDto).collect(Collectors.toSet());
     }
 
     @Override
     @Transactional
-    public PlayerDtoResponse addFriend(Long senderId, String recipientEmail)
-            throws InvalidParamException {
+    public PlayerResponse addFriend(Long senderId, String recipientEmail)
+            throws ConflictException, ResourceNotFoundException {
         Optional<Player> senderOpt = playerRepository.findById(senderId);
         Optional<Player> recipientOpt = playerRepository.findByEmail(recipientEmail);
 
-        senderOpt.orElseThrow(InvalidParamException::new);
-        recipientOpt.orElseThrow(InvalidParamException::new);
+        senderOpt.orElseThrow(() -> new ResourceNotFoundException("Sender not found"));
+        recipientOpt.orElseThrow(() -> new ResourceNotFoundException("Recipient not found"));
 
         Player sender = senderOpt.get();
         Player recipient = recipientOpt.get();
         if (!recipient.getFriendRequests().contains(sender)
                 || !sender.getFriendRequests().contains(recipient)) {
-            throw new InvalidParamException(); // переписать новый тип исключения
+            throw new ConflictException("You are not have both requests");
         }
         recipient.getFriendRequests().remove(sender);
         sender.getFriendRequests().remove(recipient);
@@ -187,16 +159,16 @@ public class PlayerServiceImpl implements PlayerService {
 
     @Override
     @Transactional
-    public PlayerDtoResponse deleteFriend(long playerId, String friendEmail)
-            throws InvalidParamException {
+    public PlayerResponse deleteFriend(long playerId, String friendEmail)
+            throws ConflictException, ResourceNotFoundException {
         Optional<Player> playerOpt = playerRepository.findById(playerId);
         Optional<Player> friendOpt = playerRepository.findByEmail(friendEmail);
-        playerOpt.orElseThrow(InvalidParamException::new);
-        friendOpt.orElseThrow(InvalidParamException::new);
+        playerOpt.orElseThrow(() -> new ResourceNotFoundException("Player not found"));
+        friendOpt.orElseThrow(() -> new ResourceNotFoundException("Friend not found"));
         Player friend = friendOpt.get();
         Player player = playerOpt.get();
         if (!friend.getFriends().contains(playerOpt.get())) {
-            throw new InvalidParamException();
+            throw new ConflictException("You are not friends");
         }
         player.getFriends().remove(friendOpt.get());
         friend.getFriends().remove(playerOpt.get());
@@ -205,41 +177,33 @@ public class PlayerServiceImpl implements PlayerService {
 
     @Override
     @Transactional
-    public PlayerDtoResponse deletePlayerById(long id)
-            throws NotFoundException {
-        Optional<Player> playerOpt = playerRepository.findById(id);
-        playerOpt.orElseThrow(NotFoundException::new);
-        Player player = playerOpt.get();
+    public PlayerResponse deletePlayerById(long id)
+            throws ResourceNotFoundException {
+        Player player = playerRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Player not found"));
         player.setFriends(null);
         player.setFriendRequests(null);
 
         playerRepository.deleteFriendshipsByPlayerId(id);
         playerRepository.deleteFriendRequestsByPlayerId(id);
         playerRepository.delete(player);
-        if (playerCache.getValue(id) != null) {
-            playerCache.remove(id);
-        }
         return PlayerMapper.toDto(player);
     }
 
     @Override
     @Transactional
-    public PlayerDtoResponse updatePlayerById(long id, PlayerDtoRequest playerDtoRequest)
-        throws InvalidParamException {
-        Optional<Player> playerOpt = playerRepository.findById(id);
-        playerOpt.orElseThrow(InvalidParamException::new);
-        Player player = playerOpt.get();
-        player.setName(playerDtoRequest.getName());
-        player.setEmail(playerDtoRequest.getEmail());
-        player.setHashPassword(PasswordUtil.hashPassword(playerDtoRequest.getPassword()));
+    public PlayerResponse updatePlayerById(long id, PlayerRequest playerRequest)
+            throws ResourceNotFoundException {
+        Player player = playerRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Player not found"));
+        player.setName(playerRequest.getName());
+        player.setEmail(playerRequest.getEmail());
+        player.setHashPassword(PasswordUtil.hashPassword(playerRequest.getPassword()));
         playerRepository.save(player);
-        playerCache.putValue(id, player);
         return PlayerMapper.toDto(player);
     }
 
     @Override
-    public Page<PlayerDtoResponse> getPlayersByFilters(PlayerFilterRequest filter)
-            throws NotFoundException {
+    public Page<PlayerResponse> getPlayersByFilters(PlayerFilterRequest filter)
+            throws ResourceNotFoundException {
 
         PageRequest pageable = PageRequest.of(filter.getPage(), filter.getSize());
         Page<Player> playerPage;
@@ -263,13 +227,13 @@ public class PlayerServiceImpl implements PlayerService {
             }
 
             if (playerPage.isEmpty()) {
-                throw new NotFoundException();
+                throw new ResourceNotFoundException("No players found");
             }
 
             return playerPage.map(PlayerMapper::toDto);
 
         } catch (EmptyResultDataAccessException e) {
-            throw new NotFoundException();
+            throw new ResourceNotFoundException("No players found");
         }
     }
 }

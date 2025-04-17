@@ -1,11 +1,8 @@
 package com.example.chess.mappers;
 
-import com.example.chess.dto.request.PlayerDtoRequest;
-import com.example.chess.dto.response.PlayerDtoResponse;
+import com.example.chess.dto.request.PlayerRequest;
+import com.example.chess.dto.response.PlayerResponse;
 import com.example.chess.entity.Player;
-import lombok.Builder;
-import lombok.Data;
-import org.springframework.data.domain.Page;
 
 
 public class PlayerMapper {
@@ -14,15 +11,15 @@ public class PlayerMapper {
         throw new UnsupportedOperationException("Utility class should not be instantiated");
     }
 
-    public static PlayerDtoResponse toDto(Player player) {
-        return new PlayerDtoResponse(player.getId(), player.getEmail(), player.getName());
+    public static PlayerResponse toDto(Player player) {
+        return new PlayerResponse(player.getId(), player.getEmail(), player.getName());
     }
 
-    public static Player toEntity(PlayerDtoRequest playerDtoRequest) {
+    public static Player toEntity(PlayerRequest playerRequest) {
         Player player = new Player();
-        player.setName(playerDtoRequest.getName());
-        player.setEmail(playerDtoRequest.getEmail());
-        player.setHashPassword(playerDtoRequest.getPassword());
+        player.setName(playerRequest.getName());
+        player.setEmail(playerRequest.getEmail());
+        player.setHashPassword(playerRequest.getPassword());
         return player;
     }
 }

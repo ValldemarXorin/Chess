@@ -21,7 +21,6 @@ public class Cache<K, V> {
 
     @Getter
     public class Node {
-
         @Setter
         private V value;
 
@@ -47,7 +46,6 @@ public class Cache<K, V> {
     }
 
     public void putValue(K key, V value) throws IllegalStateException {
-
         Node existingNode = mainCache.computeIfPresent(key, (k, node) -> {
             node.setValue(value);
             updateFrequency(key, node);

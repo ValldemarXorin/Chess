@@ -4,18 +4,18 @@ import java.time.LocalDateTime;
 import lombok.Data;
 
 @Data
-public class GameInfoDtoResponse {
+public class GameInfoResponse {
     private long id;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
-    private PlayerDtoResponse whitePlayer;
-    private PlayerDtoResponse blackPlayer;
+    private PlayerResponse whitePlayer;
+    private PlayerResponse blackPlayer;
     private String status;
     private String notes;
 
-    public GameInfoDtoResponse(long id, LocalDateTime startTime,
-                               LocalDateTime endTime, String status, String notes,
-                               PlayerDtoResponse whitePlayer, PlayerDtoResponse blackPlayer) {
+    public GameInfoResponse(long id, LocalDateTime startTime,
+                            LocalDateTime endTime, String status, String notes,
+                            PlayerResponse whitePlayer, PlayerResponse blackPlayer) {
         this.id = id;
         this.startTime = startTime;
         this.endTime = endTime;

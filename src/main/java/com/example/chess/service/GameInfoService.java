@@ -1,19 +1,24 @@
 package com.example.chess.service;
 
-import com.example.chess.dto.request.GameInfoDtoRequest;
-import com.example.chess.dto.response.GameInfoDtoResponse;
-import com.example.chess.exception.NotFoundException;
+import com.example.chess.dto.request.GameInfoRequest;
+import com.example.chess.dto.response.GameInfoResponse;
+import com.example.chess.entity.GameInfo;
+import com.example.chess.exception.ResourceNotFoundException;
+
 import java.util.List;
 
 public interface GameInfoService {
-    GameInfoDtoResponse createGame(GameInfoDtoRequest gameInfoDto);
+    GameInfoResponse createGame(GameInfoRequest gameInfoDto);
 
-    GameInfoDtoResponse getGameById(Long id) throws NotFoundException;
+    GameInfoResponse getGameById(Long id);
 
-    List<GameInfoDtoResponse> getAllGames();
+    List<GameInfoResponse> getAllGames();
 
-    GameInfoDtoResponse updateGame(Long id, GameInfoDtoRequest gameInfoDto)
-            throws NotFoundException;
+    GameInfoResponse updateGame(Long id, GameInfoRequest gameInfoDto);
 
-    void deleteGame(Long id) throws NotFoundException;
+    void deleteGame(Long id)
+            throws ResourceNotFoundException;
+
+    GameInfo getCachedGameInfo(Long id)
+            throws ResourceNotFoundException;
 }

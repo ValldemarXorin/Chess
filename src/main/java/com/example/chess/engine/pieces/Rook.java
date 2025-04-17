@@ -24,8 +24,34 @@ public class Rook extends Piece {
             return false;
         }
 
-        return (endX - this.getCoordX() == 0 && endY - this.getCoordY() != 0)
-                || (endX - this.getCoordX() != 0 && endY - this.getCoordY() == 0);
+        if (!(endX - this.getCoordX() == 0 && endY - this.getCoordY() != 0)
+                && !(endX - this.getCoordX() != 0 && endY - this.getCoordY() == 0)) {
+            return false;
+        }
+
+        int directionX = endX - this.getCoordX();
+        if (directionX != 0) {
+            directionX = directionX > 0 ? 1 : -1;
+        }
+
+        int directionY = endY - this.getCoordY();
+        if (directionY != 0) {
+            directionY = directionY > 0 ? 1 : -1;
+        }
+
+        for (int i = this.getCoordX() + directionX; i <= endX; i += directionX) {
+            if (board.getPieceAt(i, this.getCoordY()) != null) {
+                return false;
+            }
+        }
+
+        for (int j = this.getCoordY() + directionY; j <= endY; j += directionY) {
+            if (board.getPieceAt(this.getCoordX(), j) != null) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     @Override

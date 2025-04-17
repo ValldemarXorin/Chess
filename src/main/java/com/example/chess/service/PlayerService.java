@@ -1,52 +1,52 @@
 package com.example.chess.service;
 
-import com.example.chess.dto.request.PlayerDtoRequest;
+import com.example.chess.dto.request.PlayerRequest;
 import com.example.chess.dto.request.PlayerFilterRequest;
-import com.example.chess.dto.response.GameInfoDtoResponse;
-import com.example.chess.dto.response.PlayerDtoResponse;
+import com.example.chess.dto.response.GameInfoResponse;
+import com.example.chess.dto.response.PlayerResponse;
 import com.example.chess.entity.Player;
-import com.example.chess.exception.InvalidParamException;
-import com.example.chess.exception.NotFoundException;
+import com.example.chess.exception.ConflictException;
+
 import java.util.List;
 import java.util.Set;
+
+import com.example.chess.exception.ResourceNotFoundException;
 import org.springframework.data.domain.Page;
 
 public interface PlayerService {
-    public PlayerDtoResponse getPlayerById(long id)
-            throws NotFoundException;
+    public PlayerResponse getPlayerById(long id)
+            throws ResourceNotFoundException;
 
-    public Player getCachedPlayerById(long id) throws NotFoundException;
+    public List<PlayerResponse> getPlayersByNameAndEmail(String name, String email)
+            throws ResourceNotFoundException;
 
-    public List<PlayerDtoResponse> getPlayersByNameAndEmail(String name, String email)
-            throws NotFoundException;
+    public PlayerResponse createPlayer(Player player)
+            throws ConflictException;
 
-    public PlayerDtoResponse createPlayer(Player player) throws InvalidParamException;
+    public Set<PlayerResponse> getAllFriends(Long playerId)
+            throws ResourceNotFoundException;
 
-    public Set<PlayerDtoResponse> getAllFriends(Long playerId);
+    public List<GameInfoResponse> getAllGamesInfo(Long id)
+            throws ResourceNotFoundException;
 
-    public Set<PlayerDtoResponse> getAllFriendsByName(String friendName, Long playerId);
+    public PlayerResponse addFriend(Long senderId, String recipientEmail)
+            throws ConflictException;
 
-    public List<GameInfoDtoResponse> getAllGamesInfo(Long id)
-            throws InvalidParamException;
+    public PlayerResponse sendFriendRequest(long playerId, String friendEmail)
+            throws ConflictException, ResourceNotFoundException;
 
-    public PlayerDtoResponse addFriend(Long senderId, String recipientEmail)
-            throws InvalidParamException;
+    public Set<PlayerResponse> getFriendRequests(long id)
+            throws ConflictException, ResourceNotFoundException;
 
-    public PlayerDtoResponse sendFriendRequest(long playerId, String friendEmail)
-            throws InvalidParamException;
+    public PlayerResponse deleteFriend(long playerId, String friendEmail)
+            throws ConflictException, ResourceNotFoundException;
 
-    public Set<PlayerDtoResponse> getFriendRequests(long id)
-            throws InvalidParamException;
+    public PlayerResponse deletePlayerById(long id)
+            throws ResourceNotFoundException;
 
-    public PlayerDtoResponse deleteFriend(long playerId, String friendEmail)
-            throws InvalidParamException;
+    public PlayerResponse updatePlayerById(long id, PlayerRequest playerRequest)
+            throws ResourceNotFoundException;
 
-    public PlayerDtoResponse deletePlayerById(long id)
-            throws NotFoundException;
-
-    public PlayerDtoResponse updatePlayerById(long id, PlayerDtoRequest playerDtoRequest)
-            throws InvalidParamException;
-
-    public Page<PlayerDtoResponse> getPlayersByFilters(PlayerFilterRequest filter)
-            throws NotFoundException;
+    public Page<PlayerResponse> getPlayersByFilters(PlayerFilterRequest filter)
+            throws ResourceNotFoundException;
 }

@@ -56,7 +56,6 @@ public interface PlayerRepository extends JpaRepository<Player, Long> {
             + "WHERE user_id = :playerId OR friend_id = :playerId", nativeQuery = true)
     void deleteFriendshipsByPlayerId(long playerId);
 
-    // 1. JPQL: фильтр по статусу
     @Query("SELECT DISTINCT p FROM Player p "
             + "LEFT JOIN p.gamesAsWhitePlayer whiteGames "
             + "LEFT JOIN p.gamesAsBlackPlayer blackGames "
@@ -64,7 +63,6 @@ public interface PlayerRepository extends JpaRepository<Player, Long> {
             + " OR blackGames.status = :status)")
     List<Player> findPlayersByGameStatus(@Param("status") String status);
 
-    // 2. Native SQL: фильтр по endTime (BETWEEN)
     @Query(value = """
     SELECT DISTINCT p.* FROM players p
     LEFT JOIN games_info whiteGames ON p.id = whiteGames.white_player_id
@@ -75,7 +73,6 @@ public interface PlayerRepository extends JpaRepository<Player, Long> {
         """, nativeQuery = true)
     List<Player> findPlayersByGameNotesContaining(@Param("notes") String notes);
 
-    // 3. Комбинированный запрос (опционально)
     @Query("SELECT DISTINCT p FROM Player p "
             + "LEFT JOIN p.gamesAsWhitePlayer whiteGames "
             + "LEFT JOIN p.gamesAsBlackPlayer blackGames "

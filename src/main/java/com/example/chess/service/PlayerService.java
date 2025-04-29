@@ -49,4 +49,8 @@ public interface PlayerService {
 
     public Page<PlayerResponse> getPlayersByFilters(PlayerFilterRequest filter)
             throws ResourceNotFoundException;
+
+    public List<PlayerResponse> processBulkFriendRequests(long playerId,
+            List<String> requestEmails)
+            throws ResourceNotFoundException, ConflictException;
 }

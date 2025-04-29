@@ -37,7 +37,7 @@ public class LogAspect {
     }
 
     @AfterThrowing(pointcut = "controllerPointcut() || servicePointcut()", throwing = "exception")
-    public void logAfterMethod(JoinPoint jp, Exception exception) {
+    public void logAfterThrowing(JoinPoint jp, Exception exception) {
         Object[] args = jp.getArgs();
         String argsString = args.length > 0 ? Arrays.toString(args) : METHOD_WITHOUT_ARGUMENTS;
         logger.error("Throwing exception in method [{}] with arguments [{}] exception message [{}]",

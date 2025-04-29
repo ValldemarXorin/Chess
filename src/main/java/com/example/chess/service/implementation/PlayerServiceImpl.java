@@ -92,9 +92,19 @@ public class PlayerServiceImpl implements PlayerService {
     public List<GameInfoResponse> getAllGamesInfo(Long id) throws ResourceNotFoundException {
         Player player;
         player = playerRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Player not found"));
-        List<GameInfo> gamesInfo = Stream.concat(player.getGamesAsBlackPlayer().stream(),
-                player.getGamesAsWhitePlayer().stream())
-                .sorted(Comparator.comparing(GameInfo::getStartTime)).toList();
+        if (player.getGamesAsWhitePlayer() == null && player.getGamesAsBlackPlayer() == null) {
+            throw new ResourceNotFoundException("Games not exists");
+        }
+        Stream<GameInfo> whiteGames = player.getGamesAsWhitePlayer() != null
+                ? player.getGamesAsWhitePlayer().stream()
+                : Stream.empty();
+        Stream<GameInfo> blackGames = player.getGamesAsBlackPlayer() != null
+                ? player.getGamesAsBlackPlayer().stream()
+                : Stream.empty();
+
+        List<GameInfo> gamesInfo = Stream.concat(whiteGames, blackGames)
+                .sorted(Comparator.comparing(GameInfo::getStartTime))
+                .toList();
         return gamesInfo.stream().map(GameInfoMapper::toDto).collect(Collectors.toList());
     }
 
@@ -128,6 +138,7 @@ public class PlayerServiceImpl implements PlayerService {
     }
 
     @Override
+    @Transactional
     public Set<PlayerResponse> getFriendRequests(long id) throws ResourceNotFoundException {
         Player player;
         player = playerRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Player not found"));
@@ -235,5 +246,54 @@ public class PlayerServiceImpl implements PlayerService {
         } catch (EmptyResultDataAccessException e) {
             throw new ResourceNotFoundException("No players found");
         }
+    }
+
+    @Override
+    @Transactional
+    public List<PlayerResponse> processBulkFriendRequests(
+            long playerId,
+            List<String> requestEmails)
+            throws ResourceNotFoundException, ConflictException {
+        Player player = playerRepository.findById(playerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Player not found"));
+
+        List<Player> requestSenders = playerRepository.findByEmailIn(requestEmails);
+
+        logger.info(requestEmails.toString());
+        logger.info(requestSenders.toString());
+        // Проверка на отсутствующих отправителей
+        if (requestSenders.size() != requestEmails.size()) {
+            Set<String> foundEmails = requestSenders.stream()
+                    .map(Player::getEmail)
+                    .collect(Collectors.toSet());
+
+            List<String> missingEmails = requestEmails.stream()
+                    .filter(email -> !foundEmails.contains(email))
+                    .toList();
+
+            throw new ResourceNotFoundException("Request senders not found: " + String.join(", ", missingEmails));
+        }
+
+        List<Player> invalidRequests = requestSenders.stream()
+                .filter(sender -> !player.getFriendRequests().contains(sender))
+                .toList();
+
+        if (!invalidRequests.isEmpty()) {
+            throw new ConflictException("No pending requests from: " +
+                    invalidRequests.stream().map(Player::getEmail).collect(Collectors.joining(", ")));
+        }
+
+        requestSenders.forEach(sender -> {
+            player.getFriendRequests().remove(sender);
+            player.getFriends().add(sender);
+            sender.getFriends().add(player);
+        });
+
+        playerRepository.saveAll(requestSenders);
+        playerRepository.save(player);
+
+        return requestSenders.stream()
+                .map(PlayerMapper::toDto)
+                .toList();
     }
 }

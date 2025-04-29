@@ -19,7 +19,7 @@ public interface PlayerRepository extends JpaRepository<Player, Long> {
 
     Optional<Player> findByEmail(String email);
 
-    List<Player> findByNameContainingIgnoreCase(String name);
+    List<Player> findByEmailIn(List<String> emails);
 
     @Query(value = "SELECT friend FROM Player p JOIN p.friends friend"
             + " WHERE p.id = :id")

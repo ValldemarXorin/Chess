@@ -65,6 +65,7 @@ public class PlayerController {
             @ApiResponse(responseCode = "200", description = "Player created successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid input data")
     })
+
     @PostMapping
     public ResponseEntity<PlayerResponse> createPlayer(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -220,5 +221,35 @@ public class PlayerController {
             @RequestParam String recipientEmail) {
         PlayerResponse approvedFriend = playerService.addFriend(senderId, recipientEmail);
         return ResponseEntity.ok(approvedFriend);
+    }
+
+    @Operation(
+            summary = "Send bulk friend requests",
+            description = "Sends multiple friend requests from one player to others by their emails"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Friend requests sent successfully"),
+            @ApiResponse(responseCode = "404", description = "Sender or some recipients not found"),
+            @ApiResponse(responseCode = "409", description = "Already friends with some recipients")
+    })
+    @PostMapping("/{senderId}/bulk-friend-requests")
+    public ResponseEntity<List<PlayerResponse>> sendBulkFriendRequests(
+            @Parameter(description = "ID of the sender player", example = "2", required = true)
+            @PathVariable Long senderId,
+
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "List of recipient emails",
+                    required = true,
+                    content = @Content(
+                            schema = @Schema(implementation = List.class),
+                            examples = @ExampleObject(
+                                    value = "[\"gom7@gmail.com\", \"newemail@example.com\"]"
+                            )
+                    )
+            )
+            @RequestBody List<String> recipientEmails) {
+
+        List<PlayerResponse> responses = playerService.processBulkFriendRequests(senderId, recipientEmails);
+        return ResponseEntity.ok(responses);
     }
 }

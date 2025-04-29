@@ -1,11 +1,11 @@
 package com.example.chess.engine.pieces;
 
 import com.example.chess.engine.Board;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
-@Setter
-@Getter
+@Data
 public abstract class Piece {
     private Color color;
     private int coordX;

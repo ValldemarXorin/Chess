@@ -12,15 +12,17 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
+                                "swagger-ui.html",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/swagger-resources/**"
                         ).permitAll()  // Разрешаем доступ без авторизации
-                        .anyRequest().authenticated()  // Остальные запросы требуют авторизации
+                        .anyRequest().permitAll()  // Остальные запросы требуют авторизации
                 )
-                .csrf(csrf -> csrf.disable());  // Отключаем CSRF для API
+                .httpBasic(httpBasic -> {});  // Отключаем CSRF для API
 
         return http.build();
     }

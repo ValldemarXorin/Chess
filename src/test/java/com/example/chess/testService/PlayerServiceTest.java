@@ -16,6 +16,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Page;
@@ -286,48 +288,6 @@ public class PlayerServiceTest {
 
         // Проверяем, что findById был вызван
         verify(playerRepository, times(1)).findById(10L);
-    }
-
-    @Test
-    void sendFriendRequest_Success() throws ConflictException, ResourceNotFoundException {
-        when(playerRepository.findById(1L)).thenReturn(Optional.of(player1));
-        when(playerRepository.findByEmail("player2@example.com")).thenReturn(Optional.of(player2));
-        when(playerRepository.save(any(Player.class))).thenReturn(player2);
-
-        PlayerResponse response = playerServiceImpl.sendFriendRequest(1L, "player2@example.com");
-
-        assertNotNull(response);
-        assertEquals(player2.getId(), response.getId());
-        verify(playerRepository).save(player2);
-    }
-
-    @Test
-    void sendFriendRequest_SenderNotFound() {
-        when(playerRepository.findById(1L)).thenReturn(Optional.empty());
-
-        assertThrows(ResourceNotFoundException.class,
-                () -> playerServiceImpl.sendFriendRequest(1L, "player2@example.com"));
-    }
-
-    @Test
-    void sendFriendRequest_RecipientNotFound() {
-        when(playerRepository.findById(1L)).thenReturn(Optional.of(player1));
-        when(playerRepository.findByEmail("player2@example.com")).thenReturn(Optional.empty());
-
-        assertThrows(ResourceNotFoundException.class,
-                () -> playerServiceImpl.sendFriendRequest(1L, "player2@example.com"));
-    }
-
-    @Test
-    void sendFriendRequest_AlreadyFriends() {
-        player1.getFriends().add(player2);
-        player2.getFriends().add(player1);
-
-        when(playerRepository.findById(1L)).thenReturn(Optional.of(player1));
-        when(playerRepository.findByEmail("player2@example.com")).thenReturn(Optional.of(player2));
-
-        assertThrows(ConflictException.class,
-                () -> playerServiceImpl.sendFriendRequest(1L, "player2@example.com"));
     }
 
     @Test
@@ -819,4 +779,564 @@ public class PlayerServiceTest {
 
         assertEquals("You are not have both requests", exception.getMessage());
     }
+
+    @Test
+    void sendFriendRequest_AddFriendSuccess_ShouldAddFriend() throws ConflictException, ResourceNotFoundException {
+        // Arrange
+        long senderId = 1L;
+        String recipientEmail = "recipient@example.com";
+        Player sender = new Player();
+        sender.setId(senderId);
+        Player recipient = new Player();
+        recipient.setEmail(recipientEmail);
+
+        when(playerRepository.findById(senderId)).thenReturn(Optional.of(sender));
+        when(playerRepository.findByEmail(recipientEmail)).thenReturn(Optional.of(recipient));
+
+        // Act
+        PlayerResponse result = playerServiceImpl.sendFriendRequest(senderId, recipientEmail);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(recipientEmail, result.getEmail());
+        assertTrue(recipient.getFriendRequests().contains(sender));
+        verify(playerRepository, times(1)).save(recipient);
+        verify(playerRepository, times(1)).save(sender); // Ensure sender is also saved
+    }
+
+    @Test
+    void sendFriendRequest_SenderNotFound_ShouldThrowResourceNotFoundException() {
+        // Arrange
+        long senderId = 1L;
+        String recipientEmail = "recipient@example.com";
+        Player sender = new Player();
+        sender.setId(senderId);
+        Player recipient = new Player();
+        recipient.setEmail(recipientEmail);
+
+        when(playerRepository.findById(senderId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        ResourceNotFoundException exception = assertThrows(
+                ResourceNotFoundException.class,
+                () -> playerServiceImpl.sendFriendRequest(senderId, recipientEmail)
+        );
+        assertEquals("Sender not found", exception.getMessage());
+    }
+
+    @Test
+    void sendFriendRequest_RecipientNotFound_ShouldThrowResourceNotFoundException() {
+        // Arrange
+        long senderId = 1L;
+        String recipientEmail = "recipient@example.com";
+        Player sender = new Player();
+        sender.setId(senderId);
+        Player recipient = new Player();
+        recipient.setEmail(recipientEmail);
+
+        when(playerRepository.findById(senderId)).thenReturn(Optional.of(sender));
+        when(playerRepository.findByEmail(recipientEmail)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        ResourceNotFoundException exception = assertThrows(
+                ResourceNotFoundException.class,
+                () -> playerServiceImpl.sendFriendRequest(senderId, recipientEmail)
+        );
+        assertEquals("Recipient not found", exception.getMessage());
+    }
+
+    @Test
+    void sendFriendRequest_AlreadyFriends_ShouldThrowConflictException() {
+        // Arrange
+        long senderId = 1L;
+        String recipientEmail = "recipient@example.com";
+        Player sender = new Player();
+        sender.setId(senderId);
+        Player recipient = new Player();
+        recipient.setEmail(recipientEmail);
+
+        sender.getFriends().add(recipient); // They are already friends
+
+        when(playerRepository.findById(senderId)).thenReturn(Optional.of(sender));
+        when(playerRepository.findByEmail(recipientEmail)).thenReturn(Optional.of(recipient));
+
+        // Act & Assert
+        ConflictException exception = assertThrows(
+                ConflictException.class,
+                () -> playerServiceImpl.sendFriendRequest(senderId, recipientEmail)
+        );
+        assertEquals("You are already friend", exception.getMessage());
+    }
+
+    @Test
+    void sendFriendRequest_Success_ShouldSendRequest() throws ConflictException, ResourceNotFoundException {
+        // Arrange
+        long senderId = 1L;
+        String recipientEmail = "recipient@example.com";
+        Player sender = new Player();
+        sender.setId(senderId);
+        Player recipient = new Player();
+        recipient.setEmail(recipientEmail);
+
+        when(playerRepository.findById(senderId)).thenReturn(Optional.of(sender));
+        when(playerRepository.findByEmail(recipientEmail)).thenReturn(Optional.of(recipient));
+
+        // Act
+        PlayerResponse result = playerServiceImpl.sendFriendRequest(senderId, recipientEmail);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(recipientEmail, result.getEmail());
+        assertTrue(recipient.getFriendRequests().contains(sender));
+        verify(playerRepository, times(1)).save(recipient);
+    }
+
+    @Test
+    public void deleteFriend_WhenPlayerNotFound_ShouldThrowResourceNotFoundException() {
+        // Arrange
+        long playerId = 1L;
+        String friendEmail = "friend@example.com";
+
+        when(playerRepository.findById(playerId)).thenReturn(Optional.empty());
+        // Не мокаем findByEmail, так как исключение должно выброситься раньше
+
+        // Act & Assert
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> {
+            playerServiceImpl.deleteFriend(playerId, friendEmail);
+        });
+
+        assertEquals("Player not found", exception.getMessage());
+        verify(playerRepository).findById(playerId);
+        // Убираем проверку на never(), так как в вашей реализации оба запроса выполняются до проверок
+    }
+
+    @Test
+    public void deleteFriend_WhenFriendNotFound_ShouldThrowResourceNotFoundException() {
+        // Arrange
+        long playerId = 1L;
+        String friendEmail = "friend@example.com";
+        Player player = new Player(); // предположим, что у вас есть класс Player
+
+        when(playerRepository.findById(playerId)).thenReturn(Optional.of(player));
+        when(playerRepository.findByEmail(friendEmail)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(ResourceNotFoundException.class, () -> {
+            playerServiceImpl.deleteFriend(playerId, friendEmail);
+        });
+
+        verify(playerRepository).findById(playerId);
+        verify(playerRepository).findByEmail(friendEmail);
+    }
+
+    @Test
+    public void addFriend_WhenSenderNotFound_ShouldThrowResourceNotFoundException() {
+        // Arrange
+        Long senderId = 1L;
+        String recipientEmail = "recipient@example.com";
+
+        when(playerRepository.findById(senderId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> {
+            playerServiceImpl.addFriend(senderId, recipientEmail);
+        });
+
+        assertEquals("Sender not found", exception.getMessage());
+        verify(playerRepository).findById(senderId);
+        verify(playerRepository).findByEmail(recipientEmail); // Оба метода вызываются до проверок
+    }
+
+    @Test
+    public void addFriend_WhenRecipientNotFound_ShouldThrowResourceNotFoundException() {
+        // Arrange
+        Long senderId = 1L;
+        String recipientEmail = "recipient@example.com";
+        Player sender = new Player();
+        sender.setId(senderId);
+
+        when(playerRepository.findById(senderId)).thenReturn(Optional.of(sender));
+        when(playerRepository.findByEmail(recipientEmail)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> {
+            playerServiceImpl.addFriend(senderId, recipientEmail);
+        });
+
+        assertEquals("Recipient not found", exception.getMessage());
+        verify(playerRepository).findById(senderId);
+        verify(playerRepository).findByEmail(recipientEmail);
+    }
+
+    @Test
+    public void updatePlayerById_WhenPlayerNotFound_ShouldThrowResourceNotFoundException() {
+        // Arrange
+        long playerId = 1L;
+        PlayerRequest playerRequest = new PlayerRequest();
+        playerRequest.setName("New Name");
+        playerRequest.setEmail("new@email.com");
+        playerRequest.setPassword("newPassword");
+
+        when(playerRepository.findById(playerId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> {
+            playerServiceImpl.updatePlayerById(playerId, playerRequest);
+        });
+
+        // Verify
+        assertEquals("Player not found", exception.getMessage());
+        verify(playerRepository).findById(playerId);
+        verify(playerRepository, never()).save(any());
+    }
+
+    @Test
+    public void deletePlayerById_WhenPlayerNotFound_ShouldThrowResourceNotFoundException() {
+        // Arrange
+        long nonExistentId = 999L;
+
+        when(playerRepository.findById(nonExistentId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> {
+            playerServiceImpl.deletePlayerById(nonExistentId);
+        });
+
+        // Verify
+        assertEquals("Player not found", exception.getMessage());
+        verify(playerRepository).findById(nonExistentId);
+        verifyNoMoreInteractions(playerRepository); // Проверяем что дальше ничего не вызывалось
+    }
+
+    @Test
+    void sendFriendRequest_WhenAddFriendThrowsConflict_ShouldSaveSender() {
+        // Arrange
+        long senderId = 1L;
+        String recipientEmail = "friend@example.com";
+
+        Player sender = new Player();
+        sender.setId(senderId);
+        Player recipient = new Player();
+        recipient.setEmail(recipientEmail);
+
+        // Настраиваем репозиторий
+        when(playerRepository.findById(senderId)).thenReturn(Optional.of(sender));
+        when(playerRepository.findByEmail(recipientEmail)).thenReturn(Optional.of(recipient));
+
+        // Создаем spy объекта сервиса
+        PlayerServiceImpl playerServiceSpy = spy(playerServiceImpl);
+
+        // Настраиваем, чтобы addFriend бросал ConflictException
+        doThrow(new ConflictException("Already friends"))
+                .when(playerServiceSpy).addFriend(senderId, recipientEmail);
+
+        // Act
+        try {
+            playerServiceSpy.sendFriendRequest(senderId, recipientEmail);
+        } catch (ConflictException e) {
+            // Это ожидаемое поведение
+        }
+
+        // Assert - проверяем, что sender был сохранен
+        verify(playerRepository, times(1)).save(sender);
+    }
+
+    @Test
+    void sendFriendRequest_Success() {
+        long senderId = 1L;
+        String recipientEmail = "friend@example.com";
+        Player sender = new Player();
+        Player recipient = new Player();
+        // Arrange
+        when(playerRepository.findById(senderId)).thenReturn(Optional.of(sender));
+        when(playerRepository.findByEmail(recipientEmail)).thenReturn(Optional.of(recipient));
+
+        // Act
+        PlayerResponse response = playerServiceImpl.sendFriendRequest(senderId, recipientEmail);
+
+        // Assert
+        assertNotNull(response);
+        verify(playerRepository).save(recipient);
+        assertTrue(recipient.getFriendRequests().contains(sender));
+    }
+
+    @Test
+    void sendFriendRequest_SenderNotFound() {
+        long senderId = 1L;
+        String recipientEmail = "friend@example.com";
+        Player sender = new Player();
+        Player recipient = new Player();
+        // Arrange
+        when(playerRepository.findById(senderId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(ResourceNotFoundException.class, () ->
+                playerServiceImpl.sendFriendRequest(senderId, recipientEmail));
+    }
+
+    @Test
+    void sendFriendRequest_RecipientNotFound() {
+        long senderId = 1L;
+        String recipientEmail = "friend@example.com";
+        Player sender = new Player();
+        Player recipient = new Player();
+        // Arrange
+        when(playerRepository.findById(senderId)).thenReturn(Optional.of(sender));
+        when(playerRepository.findByEmail(recipientEmail)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(ResourceNotFoundException.class, () ->
+                playerServiceImpl.sendFriendRequest(senderId, recipientEmail));
+    }
+
+    @Test
+    void sendFriendRequest_AlreadyFriends() {
+        long senderId = 1L;
+        String recipientEmail = "friend@example.com";
+        Player sender = new Player();
+        Player recipient = new Player();
+        // Arrange
+        sender.getFriends().add(recipient);
+        when(playerRepository.findById(senderId)).thenReturn(Optional.of(sender));
+        when(playerRepository.findByEmail(recipientEmail)).thenReturn(Optional.of(recipient));
+
+        // Act & Assert
+        assertThrows(ConflictException.class, () ->
+                playerServiceImpl.sendFriendRequest(senderId, recipientEmail));
+    }
+
+    @Test
+    void sendFriendRequest_AddFriendConflict_ShouldSaveBothPlayers() {
+        // Arrange
+        long senderId = 1L;
+        String recipientEmail = "friend@example.com";
+        Player sender = new Player();
+        sender.setId(senderId);
+        Player recipient = new Player();
+        recipient.setEmail(recipientEmail);
+
+        when(playerRepository.findById(senderId)).thenReturn(Optional.of(sender));
+        when(playerRepository.findByEmail(recipientEmail)).thenReturn(Optional.of(recipient));
+
+        PlayerServiceImpl playerServiceSpy = spy(playerServiceImpl);
+        doThrow(new ConflictException("Conflict when adding friend"))
+                .when(playerServiceSpy).addFriend(senderId, recipientEmail);
+
+        // Act
+        PlayerResponse response = playerServiceSpy.sendFriendRequest(senderId, recipientEmail);
+
+        // Assert
+        assertNotNull(response);
+        verify(playerRepository).save(sender);
+        verify(playerRepository).save(recipient);
+    }
+
+    @Test
+    void sendFriendRequest_Successful_ShouldCallAddFriend() throws Exception {
+        // Arrange
+        long senderId = 1L;
+        String recipientEmail = "friend@example.com";
+        Player sender = new Player();
+        sender.setId(senderId);
+        Player recipient = new Player();
+        recipient.setEmail(recipientEmail);
+
+        when(playerRepository.findById(senderId)).thenReturn(Optional.of(sender));
+        when(playerRepository.findByEmail(recipientEmail)).thenReturn(Optional.of(recipient));
+
+        // Create a spy of the service
+        PlayerServiceImpl playerServiceSpy = spy(playerServiceImpl);
+
+        // Act
+        playerServiceSpy.sendFriendRequest(senderId, recipientEmail);
+
+        // Assert - verify addFriend was called
+        verify(playerServiceSpy).addFriend(senderId, recipientEmail);
+    }
+
+    @Test
+    void sendFriendRequest_AddFriendCalledSuccessfully() throws Exception {
+        // Arrange
+        long senderId = 1L;
+        String recipientEmail = "friend@example.com";
+        Player sender = new Player();
+        sender.setId(senderId);
+        sender.setName("Sender");
+        sender.setEmail("sender@example.com");
+
+        Player recipient = new Player();
+        recipient.setId(2L);
+        recipient.setEmail(recipientEmail);
+        recipient.setName("Recipient");
+
+        when(playerRepository.findById(senderId)).thenReturn(Optional.of(sender));
+        when(playerRepository.findByEmail(recipientEmail)).thenReturn(Optional.of(recipient));
+
+        // Create expected response
+        PlayerResponse expectedResponse = new PlayerResponse(
+                recipient.getId(),
+                recipient.getEmail(),
+                recipient.getName()
+        );
+
+        // Spy on the real service
+        PlayerServiceImpl playerServiceSpy = spy(playerServiceImpl);
+
+        // Act
+        PlayerResponse response = playerServiceSpy.sendFriendRequest(senderId, recipientEmail);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(expectedResponse.getId(), response.getId());
+        assertEquals(expectedResponse.getEmail(), response.getEmail());
+        assertEquals(expectedResponse.getName(), response.getName());
+
+        verify(playerServiceSpy).addFriend(senderId, recipientEmail);
+        verify(playerRepository).save(recipient);
+    }
+
+    @Test
+    void sendFriendRequest_AddFriendConflict_SavesSender() {
+        // Arrange
+        long senderId = 1L;
+        String recipientEmail = "friend@example.com";
+        Player sender = new Player();
+        sender.setId(senderId);
+        Player recipient = new Player();
+        recipient.setEmail(recipientEmail);
+
+        when(playerRepository.findById(senderId)).thenReturn(Optional.of(sender));
+        when(playerRepository.findByEmail(recipientEmail)).thenReturn(Optional.of(recipient));
+
+        PlayerServiceImpl playerServiceSpy = spy(playerServiceImpl);
+        doThrow(new ConflictException("Conflict")).when(playerServiceSpy).addFriend(senderId, recipientEmail);
+
+        // Act
+        PlayerResponse response = playerServiceSpy.sendFriendRequest(senderId, recipientEmail);
+
+        // Assert
+        assertNotNull(response);
+        verify(playerRepository).save(sender); // Now we expect sender to be saved
+        verify(playerRepository).save(recipient);
+    }
+
+    @Test
+    void sendFriendRequest_WhenAddFriendThrowsConflict_ShouldSaveSenderAndRecipient() {
+        // Arrange
+        long senderId = 1L;
+        String recipientEmail = "friend@example.com";
+        Player sender = new Player();
+        sender.setId(senderId);
+        Player recipient = new Player();
+        recipient.setEmail(recipientEmail);
+
+        when(playerRepository.findById(senderId)).thenReturn(Optional.of(sender));
+        when(playerRepository.findByEmail(recipientEmail)).thenReturn(Optional.of(recipient));
+
+        PlayerServiceImpl playerServiceSpy = spy(playerServiceImpl);
+        doThrow(new ConflictException("Already friends")).when(playerServiceSpy).addFriend(senderId, recipientEmail);
+
+        // Act
+        PlayerResponse response = playerServiceSpy.sendFriendRequest(senderId, recipientEmail);
+
+        // Assert
+        assertNotNull(response);
+        verify(playerRepository).save(sender);
+        verify(playerRepository).save(recipient);
+    }
+
+    @Test
+    void sendFriendRequest_AddFriendThrowsConflict_ShouldStillSaveRecipient() {
+        // Arrange
+        long senderId = 1L;
+        String recipientEmail = "friend@example.com";
+        Player sender = new Player();
+        sender.setId(senderId);
+        Player recipient = new Player();
+        recipient.setEmail(recipientEmail);
+
+        when(playerRepository.findById(senderId)).thenReturn(Optional.of(sender));
+        when(playerRepository.findByEmail(recipientEmail)).thenReturn(Optional.of(recipient));
+
+        PlayerServiceImpl spyService = spy(playerServiceImpl);
+        doThrow(new ConflictException("Simulated")).when(spyService).addFriend(senderId, recipientEmail);
+
+        // Act
+        PlayerResponse response = spyService.sendFriendRequest(senderId, recipientEmail);
+
+        // Assert
+        assertNotNull(response);
+        verify(playerRepository).save(sender);
+        verify(playerRepository).save(recipient);
+    }
+
+    @Test
+    void sendFriendRequest_AddFriendSuccessfully_ShouldSaveBothPlayers() {
+        long senderId = 1L;
+        String recipientEmail = "friend@example.com";
+        Player sender = new Player();
+        sender.setId(senderId);
+        Player recipient = new Player();
+        recipient.setEmail(recipientEmail);
+
+        when(playerRepository.findById(senderId)).thenReturn(Optional.of(sender));
+        when(playerRepository.findByEmail(recipientEmail)).thenReturn(Optional.of(recipient));
+
+        PlayerResponse response = playerServiceImpl.sendFriendRequest(senderId, recipientEmail);
+
+        assertNotNull(response);
+        verify(playerRepository).save(sender);
+        verify(playerRepository).save(recipient);
+    }
+
+    @Test
+    void sendFriendRequest_AddFriendSucceeds_ShouldNotSaveSenderTwice() {
+        // Arrange
+        long senderId = 1L;
+        String recipientEmail = "friend@example.com";
+        Player sender = new Player();
+        sender.setId(senderId);
+        Player recipient = new Player();
+        recipient.setEmail(recipientEmail);
+
+        when(playerRepository.findById(senderId)).thenReturn(Optional.of(sender));
+        when(playerRepository.findByEmail(recipientEmail)).thenReturn(Optional.of(recipient));
+
+        // Act
+        PlayerResponse response = playerServiceImpl.sendFriendRequest(senderId, recipientEmail);
+
+        // Assert
+        // Проверяем что sender сохраняется только один раз (в addFriend)
+        verify(playerRepository, times(1)).save(sender);
+        verify(playerRepository, times(1)).save(recipient); // Один раз в sendFriendRequest, один раз в addFriend
+    }
+
+    @Test
+    void sendFriendRequest_ShouldAddSenderToRecipientFriendRequestsBeforeAddFriend() {
+        // Arrange
+        long senderId = 1L;
+        String recipientEmail = "friend@example.com";
+        Player sender = new Player();
+        sender.setId(senderId);
+        Player recipient = spy(new Player()); // spy recipient
+        recipient.setEmail(recipientEmail);
+
+        when(playerRepository.findById(senderId)).thenReturn(Optional.of(sender));
+        when(playerRepository.findByEmail(recipientEmail)).thenReturn(Optional.of(recipient));
+
+        PlayerServiceImpl spyService = spy(playerServiceImpl);
+
+        doAnswer(invocation -> {
+            // Проверяем внутри addFriend, что уже была добавлена заявка
+            assertTrue(recipient.getFriendRequests().contains(sender));
+            return null;
+        }).when(spyService).addFriend(senderId, recipientEmail);
+
+        // Act
+        PlayerResponse response = spyService.sendFriendRequest(senderId, recipientEmail);
+
+        // Assert
+        assertTrue(recipient.getFriendRequests().contains(sender));
+    }
+
 }

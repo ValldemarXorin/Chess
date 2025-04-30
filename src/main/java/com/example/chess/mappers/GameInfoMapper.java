@@ -3,6 +3,7 @@ package com.example.chess.mappers;
 import com.example.chess.dto.request.GameInfoRequest;
 import com.example.chess.dto.response.GameInfoResponse;
 import com.example.chess.entity.GameInfo;
+import com.example.chess.exception.ResourceNotFoundException;
 import com.example.chess.repository.PlayerRepository;
 
 public class GameInfoMapper {
@@ -31,9 +32,9 @@ public class GameInfoMapper {
         gameInfo.setStatus(gameInfoRequest.getStatus());
         gameInfo.setNotes(gameInfoRequest.getNotes());
         gameInfo.setWhitePlayer(playerRepository.findById(gameInfoRequest
-                .getWhitePlayerId()).get());
+                .getWhitePlayerId()).orElseThrow(() -> new ResourceNotFoundException("White player not found")));
         gameInfo.setBlackPlayer(playerRepository.findById(gameInfoRequest
-                .getBlackPlayerId()).get());
+                .getBlackPlayerId()).orElseThrow(() -> new ResourceNotFoundException("Black player not found")));
         return gameInfo;
     }
 }

@@ -1,6 +1,7 @@
 package com.example.chess.exception;
 
 import com.example.chess.dto.response.ExceptionResponse;
+import java.time.LocalDateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -9,8 +10,6 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
-
-import java.time.LocalDateTime;
 
 @ControllerAdvice
 public class ControllerExceptionHandler {
@@ -42,13 +41,16 @@ public class ControllerExceptionHandler {
 
     @ExceptionHandler(value = {MethodArgumentNotValidException.class})
     public ResponseEntity<ExceptionResponse> handleMethodArgumentNotValidException(
-                                                                    MethodArgumentNotValidException e,
+                                                                    MethodArgumentNotValidException
+                                                                            e,
                                                                     WebRequest request) {
         log.error(e.getMessage());
-        return buildResponseEntity("Not valid email or password. Email template: example@example.com" +
-                        " Password: only latin letters, numbers, specific symbols (min required 1 specific" +
-                        " symbol, 1 letter for each register, 1 number, more than 8 characters," +
-                        " less then 30 charachters", HttpStatus.BAD_REQUEST,
+        return buildResponseEntity("Not valid email or password."
+                        + " Email template: example@example.com"
+                        + " Password: only latin letters, numbers, specific symbols (min required"
+                        + " 1 specific"
+                        + " symbol, 1 letter for each register, 1 number, more than 8 characters,"
+                        + " less then 30 charachters", HttpStatus.BAD_REQUEST,
                 request.getDescription(false));
     }
 

@@ -11,7 +11,6 @@ import com.example.chess.service.GameInfoService;
 import com.example.chess.utils.Cache;
 import jakarta.transaction.Transactional;
 import java.util.List;
-
 import org.springframework.stereotype.Service;
 
 @Service
@@ -34,7 +33,8 @@ public class GameInfoServiceImpl implements GameInfoService {
             return cacheGameInfo.getValue(id);
         }
 
-        GameInfo gameInfo = gameInfoRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("game info not found"));
+        GameInfo gameInfo = gameInfoRepository.findById(id).orElseThrow(()
+                -> new ResourceNotFoundException("game info not found"));
         cacheGameInfo.putValue(id, gameInfo);
         return gameInfo;
     }

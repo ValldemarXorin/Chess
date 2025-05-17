@@ -2,5 +2,10 @@ package com.example.chess.engine.pieces;
 
 public enum Color {
     WHITE,
-    BLACK
+    BLACK;
+
+    @Override
+    public String toString() {
+        return this == WHITE ? "white" : "black";
+    }
 }

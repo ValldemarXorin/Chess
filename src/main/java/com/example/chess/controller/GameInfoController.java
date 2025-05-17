@@ -11,11 +11,16 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Game Management", description = "Endpoints for managing chess games information")
 @RestController
@@ -32,7 +37,7 @@ public class GameInfoController {
             description = "Registers a new chess game in the system"
     )
     @ApiResponses(value = {
-            @ApiResponse(
+        @ApiResponse(
                     responseCode = "200",
                     description = "Game created successfully",
                     content = @Content(
@@ -40,7 +45,7 @@ public class GameInfoController {
                             schema = @Schema(implementation = GameInfoResponse.class)
                     )
             ),
-            @ApiResponse(
+        @ApiResponse(
                     responseCode = "400",
                     description = "Invalid game data provided"
             )
@@ -75,7 +80,7 @@ public class GameInfoController {
             description = "Retrieves detailed information about a specific chess game"
     )
     @ApiResponses(value = {
-            @ApiResponse(
+        @ApiResponse(
                     responseCode = "200",
                     description = "Game found successfully",
                     content = @Content(
@@ -83,7 +88,7 @@ public class GameInfoController {
                             schema = @Schema(implementation = GameInfoResponse.class)
                     )
             ),
-            @ApiResponse(
+        @ApiResponse(
                     responseCode = "404",
                     description = "Game not found"
             )
@@ -104,7 +109,7 @@ public class GameInfoController {
             description = "Retrieves information about all chess games in the system"
     )
     @ApiResponses(value = {
-            @ApiResponse(
+        @ApiResponse(
                     responseCode = "200",
                     description = "Games retrieved successfully",
                     content = @Content(
@@ -123,7 +128,7 @@ public class GameInfoController {
             description = "Updates information about a specific chess game"
     )
     @ApiResponses(value = {
-            @ApiResponse(
+        @ApiResponse(
                     responseCode = "200",
                     description = "Game updated successfully",
                     content = @Content(
@@ -131,11 +136,11 @@ public class GameInfoController {
                             schema = @Schema(implementation = GameInfoResponse.class)
                     )
             ),
-            @ApiResponse(
+        @ApiResponse(
                     responseCode = "400",
                     description = "Invalid game data provided"
             ),
-            @ApiResponse(
+        @ApiResponse(
                     responseCode = "404",
                     description = "Game not found"
             )
@@ -176,11 +181,11 @@ public class GameInfoController {
             description = "Removes a chess game from the system"
     )
     @ApiResponses(value = {
-            @ApiResponse(
+        @ApiResponse(
                     responseCode = "204",
                     description = "Game deleted successfully"
             ),
-            @ApiResponse(
+        @ApiResponse(
                     responseCode = "404",
                     description = "Game not found"
             )

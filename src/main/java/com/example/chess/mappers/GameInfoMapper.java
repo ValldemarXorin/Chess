@@ -32,9 +32,11 @@ public class GameInfoMapper {
         gameInfo.setStatus(gameInfoRequest.getStatus());
         gameInfo.setNotes(gameInfoRequest.getNotes());
         gameInfo.setWhitePlayer(playerRepository.findById(gameInfoRequest
-                .getWhitePlayerId()).orElseThrow(() -> new ResourceNotFoundException("White player not found")));
+                .getWhitePlayerId()).orElseThrow(()
+                    -> new ResourceNotFoundException("White player not found")));
         gameInfo.setBlackPlayer(playerRepository.findById(gameInfoRequest
-                .getBlackPlayerId()).orElseThrow(() -> new ResourceNotFoundException("Black player not found")));
+                .getBlackPlayerId()).orElseThrow(()
+                    -> new ResourceNotFoundException("Black player not found")));
         return gameInfo;
     }
 }

@@ -39,8 +39,22 @@ public final class GameAnalyzer {
     }
 
     public static boolean isPiecePinned(Piece piece, Board board) {
-        King king = board.getKing(piece.getColor());
+        Board copyBoard = new Board(board);
+        copyBoard.setPieceAt(piece.getCoordX(), piece.getCoordY(), null);
+        return GameAnalyzer.isCheck(piece.getColor(), copyBoard);
+    }
 
-        return king == null;
+    public static boolean isStalemate(Color color, Board board) {
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                if (board.getPieceAt(i, j).getColor() == color) {
+                    Allocation allocation = new Allocation(board.getPieceAt(i, j));
+                    if (allocation.hasAnyMoves(board)) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
     }
 }

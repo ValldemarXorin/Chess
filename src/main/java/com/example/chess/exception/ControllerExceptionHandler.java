@@ -2,6 +2,8 @@ package com.example.chess.exception;
 
 import com.example.chess.dto.response.ExceptionResponse;
 import java.time.LocalDateTime;
+
+import com.example.chess.exception.game.IllegalMove;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -59,6 +61,13 @@ public class ControllerExceptionHandler {
                                                                     LogsException e,
                                                                     WebRequest request) {
         return buildResponseEntity(e.getMessage(), HttpStatus.CONFLICT,
+                request.getDescription(false));
+    }
+
+    @ExceptionHandler(value = {IllegalMove.class})
+    public ResponseEntity<ExceptionResponse> handleIllegalMoveException(IllegalMove e,
+                                                                        WebRequest request) {
+        return buildResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST,
                 request.getDescription(false));
     }
 }

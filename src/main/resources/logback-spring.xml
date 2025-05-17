@@ -5,29 +5,7 @@
     <!-- Директория для логов (создается автоматически) -->
     <property name="LOG_DIR" value="./logback"/>
 
-    <!-- Аппендер для консоли (оставляем без изменений) -->
-    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
-        </encoder>
-    </appender>
-
-    <!-- Аппендер для файла с отключенной буферизацией -->
-    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOG_DIR}/chess.log</file>
-        <!-- Отключаем буферизацию для мгновенной записи -->
-        <immediateFlush>true</immediateFlush>
-        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_DIR}/archived/chess.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
-            <maxHistory>7</maxHistory>
-            <maxFileSize>10MB</maxFileSize>
-            <totalSizeCap>100MB</totalSizeCap>
-        </rollingPolicy>
-        <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
-        </encoder>
-    </appender>
-
+    <!-- Аппендер для консоли -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
             <level>WARN</level>
@@ -37,7 +15,26 @@
         </encoder>
     </appender>
 
+    <!-- Аппендер для файла -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_DIR}/chess.log</file>
+        <immediateFlush>true</immediateFlush>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!-- Без архивации, просто перезаписываем файл -->
+            <fileNamePattern>${LOG_DIR}/chess.log.%d{yyyy-MM-dd}.%i</fileNamePattern>
+            <maxHistory>7</maxHistory>
+            <maxFileSize>50MB</maxFileSize>
+            <totalSizeCap>50MB</totalSizeCap>
+            <!-- Очищаем историю при переполнении -->
+            <cleanHistoryOnStart>true</cleanHistoryOnStart>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
     <root level="INFO">
         <appender-ref ref="FILE"/>
+        <appender-ref ref="CONSOLE"/>
     </root>
 </configuration>

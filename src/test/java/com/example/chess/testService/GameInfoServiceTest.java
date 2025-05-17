@@ -358,7 +358,4 @@ class GameInfoServiceTest {
         verify(cacheGameInfo, times(2)).getValue(id);
         verifyNoInteractions(gameInfoRepository); // Ensure no DB interaction
     }
-
-
-
 }

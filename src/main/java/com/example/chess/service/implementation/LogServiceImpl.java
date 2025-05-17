@@ -1,13 +1,13 @@
 package com.example.chess.service.implementation;
 
-import com.example.chess.service.LogService;
-import org.springframework.stereotype.Service;
-
-import com.example.chess.exception.ResourceNotFoundException;
+import com.example.chess.entity.LogTask;
 import com.example.chess.exception.LogsException;
+import com.example.chess.exception.ResourceNotFoundException;
 import com.example.chess.exception.ValidationException;
-import org.springframework.stereotype.Service;
+import com.example.chess.service.LogService;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -20,72 +20,48 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
+
 @Service
 public class LogServiceImpl implements LogService {
 
-    private static final DateTimeFormatter INPUT_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-    private static final DateTimeFormatter OUTPUT_DATE_FORMAT = DateTimeFormatter.ofPattern("dd.MM.yyyy");
-    private static final int MAX_LOG_DAYS = 7;
+    @Override
+    @Async("taskExecutor")
+    public void createLogFileByDate(String date, LogTask task) {
+        task.setStatus("Processing");
+        String failedTaskStatus = "Failed";
 
-    public byte[] getLogsByDate(String date) {
-        try {
-            LocalDate logDate = LocalDate.parse(date, INPUT_DATE_FORMAT);
-            LocalDate today = LocalDate.now();
+        Path sourceLogPath = Path.of("logback", "chess.log");
+        Path dateLogFile = Path.of("logback/archived", String.format("chess-%s.log", date));
 
-            validateDate(logDate, today);
+        // Check for file conflict
+        if (Files.exists(dateLogFile)) {
+            task.setStatus(failedTaskStatus);
+            throw new LogsException("Log file for date " + date + " already exists");
+        }
 
-            if (logDate.equals(today)) {
-                return getCurrentLogs();
-            } else {
-                return getArchivedLogs(date, logDate);
+        task.setFilePath(dateLogFile.toString());
+
+        if (!Files.exists(sourceLogPath)) {
+            task.setStatus(failedTaskStatus);
+            throw new LogsException("Source log file not found");
+        }
+
+        try (BufferedReader reader = Files.newBufferedReader(sourceLogPath);
+             BufferedWriter writer = Files.newBufferedWriter(dateLogFile)) {
+            String log;
+            while ((log = reader.readLine()) != null) {
+                // Проверяем, что строка начинается с нужной даты
+                if (log.startsWith(date + " ")) {
+                    writer.write(log + "\n");
+                }
             }
-
-        } catch (DateTimeParseException e) {
-            throw new ValidationException("Invalid date format. Please use yyyy-MM-dd");
-        } catch (IOException e) {
-            throw new LogsException("Error processing log files: " + e.getMessage());
+        } catch (Exception e) {
+            task.setStatus(failedTaskStatus);
+            throw new LogsException("Error processing log file: " + e.getMessage());
         }
+
+        task.setStatus("Completed");
     }
-
-    private void validateDate(LocalDate logDate, LocalDate today) {
-        if (logDate.isBefore(today.minusDays(MAX_LOG_DAYS))) {
-            throw new ValidationException(String.format(
-                    "No logs available for date %s (logs are kept for maximum %d days)",
-                    logDate.format(OUTPUT_DATE_FORMAT), MAX_LOG_DAYS
-            ));
-        }
-    }
-
-    private byte[] getCurrentLogs() throws IOException {
-        Path currentLogPath = Path.of("logback/chess.log");
-        if (!Files.exists(currentLogPath)) {
-            throw new ResourceNotFoundException("No logs available for today yet");
-        }
-        return Files.readAllBytes(currentLogPath);
-    }
-
-    private byte[] getArchivedLogs(String date, LocalDate logDate) throws IOException {
-        List<Path> archiveFiles;
-        try (Stream<Path> paths = Files.list(Path.of("logback/archived"))) {
-            archiveFiles = paths
-                    .filter(path -> path.getFileName().toString().matches("chess\\." + date + "\\.\\d+\\.log"))
-                    .sorted()
-                    .collect(Collectors.toList());
-        }
-
-        if (archiveFiles.isEmpty()) {
-            throw new ResourceNotFoundException(String.format("No logs found for date %s",
-                    logDate.format(OUTPUT_DATE_FORMAT)));
-        }
-
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        for (Path archiveFile : archiveFiles) {
-            byte[] fileContent = Files.readAllBytes(archiveFile);
-            outputStream.write(fileContent);
-            outputStream.write("\n".getBytes(StandardCharsets.UTF_8));
-        }
-
-        return outputStream.toByteArray();
-    }
-
 }

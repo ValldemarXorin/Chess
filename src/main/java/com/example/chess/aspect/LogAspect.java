@@ -1,13 +1,15 @@
 package com.example.chess.aspect;
 
-import com.example.chess.exception.ResourceNotFoundException;
+import java.util.Arrays;
 import org.aspectj.lang.JoinPoint;
-import org.aspectj.lang.annotation.*;
+import org.aspectj.lang.annotation.AfterReturning;
+import org.aspectj.lang.annotation.AfterThrowing;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Before;
+import org.aspectj.lang.annotation.Pointcut;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-
-import java.util.Arrays;
 
 @Aspect
 @Component
@@ -16,8 +18,8 @@ public class LogAspect {
     private static final String METHOD_WITHOUT_ARGUMENTS = "method without arguments";
     Logger logger = LoggerFactory.getLogger(LogAspect.class);
 
-    @Pointcut("execution(public * com.example.chess.controller.*.*(..)) &&" +
-            "!within (com.example.chess.controller.LogController)")
+    @Pointcut("execution(public * com.example.chess.controller.*.*(..)) &&"
+            + "!within (com.example.chess.controller.LogController)")
     public void controllerPointcut() {}
 
     @Pointcut("execution(public * com.example.chess.service.*.*(..))")
@@ -27,13 +29,15 @@ public class LogAspect {
     public void logBeforeMethod(JoinPoint jp) {
         Object[] args = jp.getArgs();
         String argsString = args.length > 0 ? Arrays.toString(args) : METHOD_WITHOUT_ARGUMENTS;
-        logger.info("Starting method [{}]  with arguments [{}]", jp.getSignature().toString() ,argsString);
+        logger.info("Starting method [{}]  with arguments [{}]",
+                jp.getSignature().toString(), argsString);
     }
 
     @AfterReturning(pointcut = "controllerPointcut() || servicePointcut()", returning = "result")
     public void logAfterMethod(JoinPoint jp, Object result) {
         result = result != null ? result : "empty result";
-        logger.info("Method [{}] successfully executed with result [{}]", jp.getSignature().toString() , result);
+        logger.info("Method [{}] successfully executed with result [{}]",
+                jp.getSignature().toString(), result);
     }
 
     @AfterThrowing(pointcut = "controllerPointcut() || servicePointcut()", throwing = "exception")

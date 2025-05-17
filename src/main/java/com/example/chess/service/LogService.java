@@ -1,12 +1,7 @@
 package com.example.chess.service;
 
-import com.example.chess.exception.ValidationException;
-
-import java.io.IOException;
-import java.time.LocalDate;
+import com.example.chess.entity.LogTask;
 
 public interface LogService {
-
-    public byte[] getLogsByDate(String date);
-
+    public void createLogFileByDate(String date, LogTask task);
 }

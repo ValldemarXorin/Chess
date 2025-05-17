@@ -8,6 +8,7 @@ import com.example.chess.engine.pieces.Pawn;
 import com.example.chess.engine.pieces.Piece;
 import com.example.chess.engine.pieces.Queen;
 import com.example.chess.engine.pieces.Rook;
+import com.example.chess.entity.Player;
 import com.example.chess.exception.game.IllegalMove;
 import java.util.List;
 import lombok.Getter;
@@ -16,6 +17,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class Board {
+    private long id;
     private KingTracker kingTracker;
     private Piece[][] field;
     private boolean isWhiteToMove;
@@ -24,7 +26,7 @@ public class Board {
         field = new Piece[8][8];
         isWhiteToMove = true;
         initializeBoard();
-        kingTracker = new KingTracker((King) field[0][7], (King) field[4][7]);
+        kingTracker = new KingTracker((King) field[4][0], (King) field[4][7]);
     }
 
     public Board(Board board) {
@@ -35,7 +37,7 @@ public class Board {
             for (int y = 0; y < 8; y++) {
                 Piece piece = this.field[x][y].copy();
                 if (piece != null) {
-                    this.setPieceAt(x, y, piece); // тут должен быть клон piece
+                    this.setPieceAt(x, y, piece.copy());
                 } else {
                     this.setPieceAt(x, y, null);
                 }
@@ -95,5 +97,35 @@ public class Board {
 
     public King getKing(Color color) {
         return color == Color.WHITE ? kingTracker.getWhiteKing() : kingTracker.getBlackKing();
+    }
+
+    public void movePiece(Piece piece, int endX, int endY) throws IllegalMove {
+        if (!this.isWhiteToMove() && piece.getColor() != Color.BLACK
+                || this.isWhiteToMove() && piece.getColor() != Color.WHITE) {
+            throw new IllegalMove();
+        }
+
+        if (GameAnalyzer.isPiecePinned(piece, this)) {
+            throw new IllegalMove();
+        }
+
+        if (this.getPieceAt(endX, endY) == null) {
+            if (!piece.isLegalMove(endX, endY, this)) {
+                throw new IllegalMove();
+            }
+        } else {
+            if (!piece.isLegalCapture(this.getPieceAt(endX, endY), this)) {
+                throw new IllegalMove();
+            }
+        }
+
+        this.setPieceAt(endX, endY, piece);
+        this.setPieceAt(piece.getCoordX(), piece.getCoordY(), null);
+        piece.setCoordX(endX);
+        piece.setCoordY(endY);
+    }
+
+    public String toAnnotation(int x, int y) {
+        return "" + (char)('A' + x) + (y + 1);
     }
 }

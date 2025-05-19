@@ -1,6 +1,5 @@
 package com.example.chess.service.implementation;
 
-import com.example.chess.dto.response.GameInfoResponse;
 import com.example.chess.engine.Allocation;
 import com.example.chess.engine.Board;
 import com.example.chess.engine.GameAnalyzer;
@@ -9,17 +8,14 @@ import com.example.chess.engine.pieces.Piece;
 import com.example.chess.entity.GameInfo;
 import com.example.chess.entity.Player;
 import com.example.chess.exception.game.IllegalMove;
-import com.example.chess.mappers.GameInfoMapper;
 import com.example.chess.repository.GameInfoRepository;
 import com.example.chess.service.GameService;
-import lombok.Getter;
-import org.antlr.v4.runtime.misc.Pair;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Service;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import org.antlr.v4.runtime.misc.Pair;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Service;
 
 @Service
 @Scope("prototype")
@@ -57,15 +53,15 @@ public class GameServiceImpl implements GameService {
         return GameAnalyzer.isCheck(color, this.board);
     }
 
-    public boolean isCheckmate(Color color){
+    public boolean isCheckmate(Color color) {
         if (GameAnalyzer.isMate(color, this.board)) {
             this.status = "Checkmate";
             return true;
-        };
+        }
         return false;
     }
 
-    public boolean isStalemate(){
+    public boolean isStalemate() {
         Color whoMove = board.isWhiteToMove() ? Color.WHITE : Color.BLACK;
         if (GameAnalyzer.isStalemate(whoMove, this.board)) {
             this.status = "Stalemate";
@@ -85,7 +81,7 @@ public class GameServiceImpl implements GameService {
         board.changeMove();
     }
 
-    public Piece[][] showBoard(){
+    public Piece[][] showBoard() {
         return board.getField();
     }
 
@@ -93,8 +89,8 @@ public class GameServiceImpl implements GameService {
         List<Pair<Integer, Integer>> moves = new ArrayList<>();
         for (int i = 0; i < 8; ++i) {
             for (int j = 0; j < 8; ++j) {
-                if (board.getPieceAt(i , j).getColor() == color) {
-                    Allocation allocation = new Allocation(board.getPieceAt(i , j));
+                if (board.getPieceAt(i, j).getColor() == color) {
+                    Allocation allocation = new Allocation(board.getPieceAt(i, j));
                     moves.addAll(allocation.calculateAllMoves(board));
                 }
             }

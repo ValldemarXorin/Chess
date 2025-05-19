@@ -20,7 +20,8 @@ public class GameController {
     private GameManagerService gameManagerService;
 
     @MessageMapping("/game/{gameId}/move")
-    public void move(@DestinationVariable String gameId, @Payload ChessMoveRequest move) throws IllegalMove {
+    public void move(@DestinationVariable String gameId, @Payload ChessMoveRequest move)
+            throws IllegalMove {
         this.gameService = this.gameManagerService.getActiveGame(Long.parseLong(gameId));
         if (move.getPlayerId() == gameService.getGameInfo().getWhitePlayer().getId()
                 && gameService.getBoard().isWhiteToMove()

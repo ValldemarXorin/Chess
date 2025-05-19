@@ -1,40 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configuration scan="true" scanPeriod="30 seconds">
+<configuration scan="true">
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
 
-    <!-- Директория для логов (создается автоматически) -->
-    <property name="LOG_DIR" value="./logback"/>
-
-    <!-- Аппендер для консоли -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-            <level>WARN</level>
-        </filter>
         <encoder>
-            <pattern>%d{HH:mm:ss.SSS} [%thread] %highlight(%-5level) %logger{36} - %msg%n</pattern>
+            <pattern>%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(%5p) %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n%wEx</pattern>
+            <charset>utf8</charset>
         </encoder>
     </appender>
 
-    <!-- Аппендер для файла -->
-    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOG_DIR}/chess.log</file>
-        <immediateFlush>true</immediateFlush>
-        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <!-- Без архивации, просто перезаписываем файл -->
-            <fileNamePattern>${LOG_DIR}/chess.log.%d{yyyy-MM-dd}.%i</fileNamePattern>
-            <maxHistory>7</maxHistory>
-            <maxFileSize>50MB</maxFileSize>
-            <totalSizeCap>50MB</totalSizeCap>
-            <!-- Очищаем историю при переполнении -->
-            <cleanHistoryOnStart>true</cleanHistoryOnStart>
-        </rollingPolicy>
+    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+        <file>logback/chess.log</file>
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
 
     <root level="INFO">
-        <appender-ref ref="FILE"/>
         <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
     </root>
 </configuration>

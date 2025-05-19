@@ -14,8 +14,6 @@ interface Player {
 
 const AppContent: React.FC = () => {
   const [player, setPlayer] = useState<Player | null>(null);
-  const [gameId, setGameId] = useState<number | null>(null);
-  const [playerColor, setPlayerColor] = useState<string | null>(null);
   const [connected, setConnected] = useState(false);
   const navigate = useNavigate();
 
@@ -50,48 +48,31 @@ const AppContent: React.FC = () => {
     };
   }, [player]);
 
-  useEffect(() => {
-    if (player) {
-      console.log('Авторизация успешна, переход в Lobby');
-      navigate('/lobby');
-    }
-  }, [player, navigate]);
-
   const handleLogin = (playerData: Player) => {
     console.log('Логин успешен, playerData:', playerData);
     setPlayer(playerData);
+    console.log('Авторизация успешна, переход в Lobby'); ////////////////////
+    navigate('/lobby');                                     //////////////////////////////
   };
 
   const handleMatchFound = (gameId: number, color: string) => {
     console.log('Матч найден:', { gameId, color });
-    setGameId(gameId);
-    setPlayerColor(color);
+    // Навигация теперь выполняется в Lobby.tsx
   };
 
-  console.log('Текущее состояние App:', { player, gameId, playerColor, connected });
+  console.log('Текущее состояние App:', { player, connected });
 
   return (
       <Routes>
-        {!player ? (
-            <Route path="/" element={<Login onLogin={handleLogin} />} />
-        ) : !gameId || !playerColor ? (
-            <Route
-                path="/lobby"
-                element={
-                  <Lobby
-                      playerId={player.id}
-                      playerName={player.name || 'Игрок'}
-                      connected={connected}
-                      onMatchFound={handleMatchFound}
-                  />
-                }
-            />
-        ) : (
-            <Route
-                path="/game"
-                element={<Game gameId={gameId} playerId={player.id} playerColor={playerColor!} />}
-            />
-        )}
+        <Route
+            path="/"
+            element={player ? <Lobby playerId={player.id} playerName={player.name || 'Игрок'} connected={connected} onMatchFound={handleMatchFound} /> : <Login onLogin={handleLogin} />}
+        />
+        <Route
+            path="/lobby"
+            element={player ? <Lobby playerId={player.id} playerName={player.name || 'Игрок'} connected={connected} onMatchFound={handleMatchFound} /> : <Login onLogin={handleLogin} />}
+        />
+        <Route path="/game/:gameId" element={<Game />} />
         <Route path="*" element={<Login onLogin={handleLogin} />} />
       </Routes>
   );

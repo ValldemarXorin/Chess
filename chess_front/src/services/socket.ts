@@ -85,6 +85,7 @@ export const disconnect = () => {
 };
 
 export const subscribe = (destination: string, callback: (message: any) => void): string => {
+    console.log("сработала подписка. stompClient: {}; stompClient.connected: {}", stompClient, stompClient?.connected);
     if (stompClient && stompClient.connected) {
         console.log('Подписка на destination:', destination);
         const subscription = stompClient.subscribe(destination, (message: any) => {

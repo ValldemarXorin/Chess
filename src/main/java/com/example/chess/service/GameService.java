@@ -1,15 +1,14 @@
 package com.example.chess.service;
 
-import com.example.chess.dto.response.GameInfoResponse;
 import com.example.chess.engine.Board;
 import com.example.chess.engine.pieces.Color;
 import com.example.chess.engine.pieces.Piece;
 import com.example.chess.entity.GameInfo;
 import com.example.chess.entity.Player;
 import com.example.chess.exception.game.IllegalMove;
+import java.util.List;
 import org.antlr.v4.runtime.misc.Pair;
 
-import java.util.List;
 
 public interface GameService {
     public long initGame(Player whitePlayer, Player blackPlayer);

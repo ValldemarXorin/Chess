@@ -1,4 +1,5 @@
 package com.example.chess.controller;
+
 import com.example.chess.service.MatchMakingService;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
@@ -16,7 +17,7 @@ public class MatchMakingController {
     private final Logger logger = LoggerFactory.getLogger(MatchMakingController.class);
 
     @MessageMapping("{playerId}/game/add-in-game-pool")
-    public void AddInGamePool(@DestinationVariable long playerId) {
+    public void addInGamePool(@DestinationVariable long playerId) {
         logger.info("Начало добавления пользователя в пул пользователей.");
         matchMakingService.addPlayerToQueue(playerId);
     }

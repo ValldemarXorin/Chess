@@ -43,11 +43,12 @@ public class PlayerController {
         this.playerService = playerService;
     }
 
-    @Operation(summary = "Authenticate player", description = "Authenticates a player using email and password")
+    @Operation(summary = "Authenticate player",
+            description = "Authenticates a player using email and password")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Authentication successful"),
-            @ApiResponse(responseCode = "401", description = "Invalid credentials"),
-            @ApiResponse(responseCode = "404", description = "Player not found")
+        @ApiResponse(responseCode = "200", description = "Authentication successful"),
+        @ApiResponse(responseCode = "401", description = "Invalid credentials"),
+        @ApiResponse(responseCode = "404", description = "Player not found")
     })
     @PostMapping("/login")
     public ResponseEntity<PlayerResponse> authenticatePlayer(
@@ -57,12 +58,14 @@ public class PlayerController {
                     content = @Content(
                             schema = @Schema(implementation = PlayerRequest.class),
                             examples = @ExampleObject(
-                                    value = "{\"email\": \"john@example.com\", \"password\": \"Password123!\"}"
+                                    value = "{\"email\": \"john@example.com\","
+                                            + " \"password\": \"Password123!\"}"
                             )
                     )
             )
             @Valid @RequestBody PlayerRequest loginRequest) {
-        PlayerResponse playerResponse = playerService.authenticatePlayer(loginRequest.getEmail(), loginRequest.getPassword());
+        PlayerResponse playerResponse = playerService.authenticatePlayer(loginRequest.getEmail(),
+                loginRequest.getPassword());
         return ResponseEntity.ok(playerResponse);
     }
 

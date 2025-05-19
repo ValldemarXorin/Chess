@@ -4,13 +4,12 @@ import com.example.chess.entity.Player;
 import com.example.chess.repository.GameInfoRepository;
 import com.example.chess.service.GameManagerService;
 import com.example.chess.service.GameService;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
-
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class GameManagerServiceImpl implements GameManagerService {
@@ -21,7 +20,8 @@ public class GameManagerServiceImpl implements GameManagerService {
 
     private final Logger logger = LoggerFactory.getLogger(GameManagerServiceImpl.class);
 
-    public GameManagerServiceImpl(GameInfoRepository gameInfoRepository, ApplicationContext applicationContext) {
+    public GameManagerServiceImpl(GameInfoRepository gameInfoRepository,
+                                  ApplicationContext applicationContext) {
         this.gameInfoRepository = gameInfoRepository;
         this.applicationContext = applicationContext;
     }

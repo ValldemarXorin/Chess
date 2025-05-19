@@ -126,6 +126,6 @@ public class Board {
     }
 
     public String toAnnotation(int x, int y) {
-        return "" + (char)('A' + x) + (y + 1);
+        return "" + (char) ('A' + x) + (y + 1);
     }
 }

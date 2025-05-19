@@ -1,9 +1,8 @@
 package com.example.chess.exception;
 
 import com.example.chess.dto.response.ExceptionResponse;
-import java.time.LocalDateTime;
-
 import com.example.chess.exception.game.IllegalMove;
+import java.time.LocalDateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;

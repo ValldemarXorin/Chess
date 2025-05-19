@@ -43,7 +43,8 @@ public class PlayerServiceImpl implements PlayerService {
     @Override
     public PlayerResponse authenticatePlayer(String email, String password) {
         Optional<Player> playerOpt = playerRepository.findByEmail(email);
-        Player player = playerOpt.orElseThrow(() -> new ResourceNotFoundException("Player not found"));
+        Player player = playerOpt.orElseThrow(
+                () -> new ResourceNotFoundException("Player not found"));
 
         if (!PasswordUtil.matchPassword(password, player.getHashPassword())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
@@ -274,8 +275,6 @@ public class PlayerServiceImpl implements PlayerService {
             long playerId,
             List<String> requestEmails)
             throws ResourceNotFoundException, ConflictException {
-        Player player = playerRepository.findById(playerId)
-                .orElseThrow(() -> new ResourceNotFoundException("Player not found"));
 
         List<Player> requestSenders = playerRepository.findByEmailIn(requestEmails);
 
@@ -294,6 +293,9 @@ public class PlayerServiceImpl implements PlayerService {
             throw new ResourceNotFoundException("Request senders not found: "
                     + String.join(", ", missingEmails));
         }
+
+        Player player = playerRepository.findById(playerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Player not found"));
 
         List<Player> invalidRequests = requestSenders.stream()
                 .filter(sender -> !player.getFriendRequests().contains(sender))

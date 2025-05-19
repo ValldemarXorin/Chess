@@ -1,29 +1,25 @@
 package com.example.chess.service.implementation;
 
 import com.example.chess.dto.response.MatchFoundResponse;
-import com.example.chess.dto.response.PlayerResponse;
-import com.example.chess.engine.pieces.Color;
 import com.example.chess.entity.Player;
 import com.example.chess.repository.PlayerRepository;
 import com.example.chess.service.GameManagerService;
 import com.example.chess.service.MatchMakingService;
 import com.example.chess.service.PlayerService;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.messaging.simp.user.SimpUser;
+import org.springframework.messaging.simp.user.SimpUserRegistry;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 @AllArgsConstructor
@@ -40,6 +36,7 @@ public class MatchMakingServiceImpl implements MatchMakingService {
     private final PlayerRepository playerRepository;
 
     private final Logger logger = LoggerFactory.getLogger(MatchMakingServiceImpl.class);
+    private final SimpUserRegistry userRegistry;
 
     @Getter
     @AllArgsConstructor
@@ -68,6 +65,8 @@ public class MatchMakingServiceImpl implements MatchMakingService {
     }
 
     public void addPlayerToQueue(Long playerId) {
+        messagingTemplate.convertAndSend("/queue/matchmaking", playerId);
+
         logger.info("Добавление пользователя в очередь игроков ММ");
         waitingPlayers.put(playerId, new PlayerQueueEntry(playerId));
         logger.info("Добавлен игрок в очередь.");
@@ -90,7 +89,8 @@ public class MatchMakingServiceImpl implements MatchMakingService {
         waitingPlayers.keySet().removeIf(playerId ->
                 !isPlayerActive(playerId, currentTime)
         );
-        logger.info("Удаление инактивных игроков завершено. Оставшиеся ключи" + waitingPlayers.keySet());
+        logger.info("Удаление инактивных игроков завершено. Оставшиеся ключи"
+                + waitingPlayers.keySet());
     }
 
     private boolean isPlayerActive(Long playerId, long currentTime) {
@@ -121,40 +121,17 @@ public class MatchMakingServiceImpl implements MatchMakingService {
     }
 
     private void notifyPlayers(Long whitePlayerId, Long blackPlayerId, Long gameId) {
-//        MatchFoundResponse whitePlayerMatchFoundResponse = new MatchFoundResponse(gameId, "white");
-//        MatchFoundResponse blackPlayerMatchFoundResponse = new MatchFoundResponse(gameId, "black");
-//        ObjectMapper mapper = new ObjectMapper();
-//        try {
-//            String json = mapper.writeValueAsString(whitePlayerMatchFoundResponse);
-//            logger.debug("JSON сообщения: {}", json);
-//        } catch (JsonProcessingException e) {
-//            logger.error("Ошибка сериализации сообщения", e);
-//        }
-//
-//        logger.info("Отправка уведомления игроку с playerId: {} на /user/{}/queue/matchmaking с данными: {}",
-//                whitePlayerId, whitePlayerId, gameId);
-//        messagingTemplate.convertAndSendToUser(
-//                whitePlayerId.toString(),
-//                "/queue/matchmaking",
-//                whitePlayerMatchFoundResponse
-//        );
-//        try {
-//            String json = mapper.writeValueAsString(blackPlayerMatchFoundResponse);
-//            logger.debug("JSON сообщения: {}", json);
-//        } catch (JsonProcessingException e) {
-//            logger.error("Ошибка сериализации сообщения", e);
-//        }
-//
-//        logger.info("Отправка уведомления игроку с playerId: {} на /user/{}/queue/matchmaking с данными: {}",
-//                blackPlayerId, blackPlayerId, gameId);
-//        messagingTemplate.convertAndSendToUser(
-//                blackPlayerId.toString(),
-//                "/queue/matchmaking",
-//                blackPlayerMatchFoundResponse
-//        );
-//    }
+
         MatchFoundResponse whiteResponse = new MatchFoundResponse(gameId, "white");
         MatchFoundResponse blackResponse = new MatchFoundResponse(gameId, "black");
+
+        logger.info("Проверка SimpUserRegistry перед отправкой...");
+        SimpUser user1 = userRegistry.getUser(whitePlayerId.toString());
+        SimpUser user2 = userRegistry.getUser(blackPlayerId.toString());
+        logger.info("Пользователь {}: {}", whitePlayerId, user1 != null ? "найден, сессии: "
+                + user1.getSessions() : "не найден");
+        logger.info("Пользователь {}: {}", blackPlayerId, user2 != null ? "найден, сессии: "
+                + user2.getSessions() : "не найден");
 
         try {
             logger.info("Отправка уведомления игроку {} на /user/{}/queue/matchmaking: {}",
@@ -166,7 +143,8 @@ public class MatchMakingServiceImpl implements MatchMakingService {
             );
             logger.info("Уведомление успешно отправлено игроку {}", whitePlayerId);
         } catch (Exception e) {
-            logger.error("Ошибка при отправке уведомления игроку {}: {}", whitePlayerId, e.getMessage(), e);
+            logger.error("Ошибка при отправке уведомления игроку {}: {}",
+                    whitePlayerId, e.getMessage(), e);
         }
 
         try {
@@ -179,7 +157,12 @@ public class MatchMakingServiceImpl implements MatchMakingService {
             );
             logger.info("Уведомление успешно отправлено игроку {}", blackPlayerId);
         } catch (Exception e) {
-            logger.error("Ошибка при отправке уведомления игроку {}: {}", blackPlayerId, e.getMessage(), e);
+            logger.error("Ошибка при отправке уведомления игроку {}: {}",
+                    blackPlayerId, e.getMessage(), e);
         }
+
+        // Отладка: отправка на общий маршрут
+        messagingTemplate.convertAndSend("/queue/matchmaking", whiteResponse);
+        messagingTemplate.convertAndSend("/queue/matchmaking", blackResponse);
     }
 }

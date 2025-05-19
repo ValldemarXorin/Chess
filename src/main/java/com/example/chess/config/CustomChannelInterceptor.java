@@ -19,29 +19,25 @@ public class CustomChannelInterceptor implements ChannelInterceptor {
 
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
-        StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
-        if (accessor != null) {
-            logger.debug("Обработка STOMP-сообщения: command={}, session={}", accessor.getCommand(), accessor.getSessionId());
-            if (StompCommand.CONNECT.equals(accessor.getCommand())) {
-                String userHeader = accessor.getFirstNativeHeader("user");
-                logger.info("Аутентификация WebSocket: userHeader={}", userHeader);
-                if (userHeader != null) {
-                    Authentication auth = new UsernamePasswordAuthenticationToken(userHeader, null, null);
-                    accessor.setUser(auth);
-                    logger.info("Установлен пользователь для сессии {}: {}", accessor.getSessionId(), userHeader);
-                } else {
-                    logger.warn("Заголовок user отсутствует в WebSocket-соединении");
-                }
+        StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
+        if (StompCommand.CONNECT.equals(accessor.getCommand())) {
+            String user = accessor.getFirstNativeHeader("user");
+            if (user != null) {
+                accessor.setUser(new UsernamePasswordAuthenticationToken(user, null));
+                logger.info("Аутентификация WebSocket: установлен пользователь {} для сессии {}",
+                        user, accessor.getSessionId());
+            } else {
+                logger.error("Заголовок user отсутствует в CONNECT для сессии {}",
+                        accessor.getSessionId());
             }
-            if (StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
-                logger.info("Подписка на маршрут: {}, user={}", accessor.getDestination(), accessor.getUser());
-            }
-            if (StompCommand.SEND.equals(accessor.getCommand())) {
-                logger.info("Отправка сообщения на маршрут: {}, user={}", accessor.getDestination(), accessor.getUser());
-            }
-            if (StompCommand.MESSAGE.equals(accessor.getCommand())) {
-                logger.info("Передача сообщения на маршрут: {}, user={}", accessor.getDestination(), accessor.getUser());
-            }
+        }
+        if (StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
+            String destination = accessor.getDestination();
+            logger.info("Подписка на маршрут: {}, пользователь: {}, сессия: {}",
+                    destination, accessor.getUser(), accessor.getSessionId());
+        }
+        if (StompCommand.DISCONNECT.equals(accessor.getCommand())) {
+            logger.info("Отключение сессии: {}", accessor.getSessionId());
         }
         return message;
     }

@@ -123,7 +123,7 @@ public class PlayerServiceImpl implements PlayerService {
         List<GameInfo> gamesInfo = Stream.concat(whiteGames, blackGames)
                 .sorted(Comparator.comparing(GameInfo::getStartTime))
                 .toList();
-        return gamesInfo.stream().map(GameInfoMapper::toDto).collect(Collectors.toList());
+        return gamesInfo.stream().map(GameInfoMapper::toDto).toList();
     }
 
     @Override
@@ -279,8 +279,12 @@ public class PlayerServiceImpl implements PlayerService {
 
         List<Player> requestSenders = playerRepository.findByEmailIn(requestEmails);
 
-        logger.info(requestEmails.toString());
-        logger.info(requestSenders.toString());
+        if (logger.isInfoEnabled()) {
+            logger.info(requestEmails.toString());
+        }
+        if (logger.isInfoEnabled()) {
+            logger.info(requestSenders.toString());
+        }
         // Проверка на отсутствующих отправителей
         if (requestSenders.size() != requestEmails.size()) {
             Set<String> foundEmails = requestSenders.stream()

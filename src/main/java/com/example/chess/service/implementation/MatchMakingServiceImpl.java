@@ -84,12 +84,12 @@ public class MatchMakingServiceImpl implements MatchMakingService {
     private void cleanupInactivePlayers() {
         long currentTime = System.currentTimeMillis();
 
-        logger.info("Удаление инактивных игроков с ключами" + waitingPlayers.keySet());
+        logger.info("Удаление инактивных игроков с ключами {}", waitingPlayers.keySet());
         waitingPlayers.keySet().removeIf(playerId ->
                 !isPlayerActive(playerId, currentTime)
         );
-        logger.info("Удаление инактивных игроков завершено. Оставшиеся ключи"
-                + waitingPlayers.keySet());
+        logger.info("Удаление инактивных игроков завершено. Оставшиеся ключи {}",
+                waitingPlayers.keySet());
     }
 
     private boolean isPlayerActive(Long playerId, long currentTime) {
@@ -100,8 +100,7 @@ public class MatchMakingServiceImpl implements MatchMakingService {
     private List<Long> getActivePlayers() {
         long currentTime = System.currentTimeMillis();
         return waitingPlayers.keySet().stream()
-                .filter(playerId -> isPlayerActive(playerId, currentTime))
-                .collect(Collectors.toList());
+                .filter(playerId -> isPlayerActive(playerId, currentTime)).toList();
     }
 
     @Transactional

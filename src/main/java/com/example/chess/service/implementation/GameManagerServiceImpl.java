@@ -30,7 +30,7 @@ public class GameManagerServiceImpl implements GameManagerService {
         logger.info("Начинаем создавать игру");
         GameService gameService = applicationContext.getBean(GameService.class);
         long gameId = gameService.initGame(whitePlayer, blackPlayer);
-        logger.info("Создали игру с id" + gameId);
+        logger.info("Создали игру с id {}", gameId);
         activeGames.put(gameId, gameService);
         return gameId;
     }

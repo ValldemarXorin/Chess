@@ -35,6 +35,7 @@ import org.springframework.web.server.ResponseStatusException;
 public class PlayerServiceImpl implements PlayerService {
     private final PlayerRepository playerRepository;
     private final Logger logger = LoggerFactory.getLogger(PlayerServiceImpl.class);
+    private final String playerNotFoundMsg = "Player not found";
 
     public PlayerServiceImpl(PlayerRepository playerRepository) {
         this.playerRepository = playerRepository;
@@ -44,7 +45,7 @@ public class PlayerServiceImpl implements PlayerService {
     public PlayerResponse authenticatePlayer(String email, String password) {
         Optional<Player> playerOpt = playerRepository.findByEmail(email);
         Player player = playerOpt.orElseThrow(
-                () -> new ResourceNotFoundException("Player not found"));
+                () -> new ResourceNotFoundException(playerNotFoundMsg));
 
         if (!PasswordUtil.matchPassword(password, player.getHashPassword())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
@@ -56,7 +57,7 @@ public class PlayerServiceImpl implements PlayerService {
     @Override
     public PlayerResponse getPlayerById(long id) throws ResourceNotFoundException {
         Player player = playerRepository.findById(id).orElseThrow(()
-                -> new ResourceNotFoundException("Player not found"));
+                -> new ResourceNotFoundException(playerNotFoundMsg));
         return PlayerMapper.toDto(player);
     }
 
@@ -78,7 +79,7 @@ public class PlayerServiceImpl implements PlayerService {
         }
 
         if (players.isEmpty()) {
-            throw new ResourceNotFoundException("Player not found");
+            throw new ResourceNotFoundException(playerNotFoundMsg);
         }
 
         return players.stream().map(PlayerMapper::toDto).toList();
@@ -98,7 +99,7 @@ public class PlayerServiceImpl implements PlayerService {
     public Set<PlayerResponse> getAllFriends(Long id) throws ResourceNotFoundException {
         Set<Player> friends = playerRepository.findAllFriends(id);
         if (friends.isEmpty()) {
-            throw new ResourceNotFoundException("Player not found");
+            throw new ResourceNotFoundException(playerNotFoundMsg);
         }
         return friends.stream().map(PlayerMapper::toDto).collect(Collectors.toSet());
     }
@@ -108,7 +109,7 @@ public class PlayerServiceImpl implements PlayerService {
     public List<GameInfoResponse> getAllGamesInfo(Long id) throws ResourceNotFoundException {
         Player player;
         player = playerRepository.findById(id).orElseThrow(()
-                -> new ResourceNotFoundException("Player not found"));
+                -> new ResourceNotFoundException(playerNotFoundMsg));
         if (player.getGamesAsWhitePlayer() == null && player.getGamesAsBlackPlayer() == null) {
             throw new ResourceNotFoundException("Games not exists");
         }
@@ -159,7 +160,7 @@ public class PlayerServiceImpl implements PlayerService {
     public Set<PlayerResponse> getFriendRequests(long id) throws ResourceNotFoundException {
         Player player;
         player = playerRepository.findById(id).orElseThrow(()
-                -> new ResourceNotFoundException("Player not found"));
+                -> new ResourceNotFoundException(playerNotFoundMsg));
         return player.getFriendRequests().stream()
                 .map(PlayerMapper::toDto).collect(Collectors.toSet());
     }
@@ -193,7 +194,7 @@ public class PlayerServiceImpl implements PlayerService {
             throws ConflictException, ResourceNotFoundException {
         Optional<Player> playerOpt = playerRepository.findById(playerId);
         Optional<Player> friendOpt = playerRepository.findByEmail(friendEmail);
-        playerOpt.orElseThrow(() -> new ResourceNotFoundException("Player not found"));
+        playerOpt.orElseThrow(() -> new ResourceNotFoundException(playerNotFoundMsg));
         friendOpt.orElseThrow(() -> new ResourceNotFoundException("Friend not found"));
         Player friend = friendOpt.get();
         Player player = playerOpt.get();
@@ -210,7 +211,7 @@ public class PlayerServiceImpl implements PlayerService {
     public PlayerResponse deletePlayerById(long id)
             throws ResourceNotFoundException {
         Player player = playerRepository.findById(id).orElseThrow(()
-                -> new ResourceNotFoundException("Player not found"));
+                -> new ResourceNotFoundException(playerNotFoundMsg));
         player.setFriends(null);
         player.setFriendRequests(null);
 
@@ -225,7 +226,7 @@ public class PlayerServiceImpl implements PlayerService {
     public PlayerResponse updatePlayerById(long id, PlayerRequest playerRequest)
             throws ResourceNotFoundException {
         Player player = playerRepository.findById(id).orElseThrow(()
-                -> new ResourceNotFoundException("Player not found"));
+                -> new ResourceNotFoundException(playerNotFoundMsg));
         player.setName(playerRequest.getName());
         player.setEmail(playerRequest.getEmail());
         player.setHashPassword(PasswordUtil.hashPassword(playerRequest.getPassword()));
@@ -295,7 +296,7 @@ public class PlayerServiceImpl implements PlayerService {
         }
 
         Player player = playerRepository.findById(playerId)
-                .orElseThrow(() -> new ResourceNotFoundException("Player not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(playerNotFoundMsg));
 
         List<Player> invalidRequests = requestSenders.stream()
                 .filter(sender -> !player.getFriendRequests().contains(sender))

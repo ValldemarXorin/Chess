@@ -29,22 +29,28 @@ public class LogAspect {
     public void logBeforeMethod(JoinPoint jp) {
         Object[] args = jp.getArgs();
         String argsString = args.length > 0 ? Arrays.toString(args) : METHOD_WITHOUT_ARGUMENTS;
-        logger.info("Starting method [{}]  with arguments [{}]",
-                jp.getSignature().toString(), argsString);
+        if (logger.isInfoEnabled()) {
+            logger.info("Starting method [{}]  with arguments [{}]",
+                    jp.getSignature(), argsString);
+        }
     }
 
     @AfterReturning(pointcut = "controllerPointcut() || servicePointcut()", returning = "result")
     public void logAfterMethod(JoinPoint jp, Object result) {
         result = result != null ? result : "empty result";
-        logger.info("Method [{}] successfully executed with result [{}]",
-                jp.getSignature().toString(), result);
+        if (logger.isInfoEnabled()) {
+            logger.info("Method [{}] successfully executed with result [{}]",
+                    jp.getSignature(), result);
+        }
     }
 
     @AfterThrowing(pointcut = "controllerPointcut() || servicePointcut()", throwing = "exception")
     public void logAfterThrowing(JoinPoint jp, Exception exception) {
         Object[] args = jp.getArgs();
         String argsString = args.length > 0 ? Arrays.toString(args) : METHOD_WITHOUT_ARGUMENTS;
-        logger.error("Throwing exception in method [{}] with arguments [{}] exception message [{}]",
-                jp.getSignature().toShortString(), argsString, exception.getMessage());
+        if (logger.isErrorEnabled()) {
+            logger.error("Throwing exception in method [{}] with arguments [{}] exception message [{}]",
+                    jp.getSignature(), argsString, exception.getMessage());
+        }
     }
 }

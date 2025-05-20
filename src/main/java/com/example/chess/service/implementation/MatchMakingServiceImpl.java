@@ -5,7 +5,6 @@ import com.example.chess.entity.Player;
 import com.example.chess.repository.PlayerRepository;
 import com.example.chess.service.GameManagerService;
 import com.example.chess.service.MatchMakingService;
-import com.example.chess.service.PlayerService;
 import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -25,7 +24,7 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 public class MatchMakingServiceImpl implements MatchMakingService {
     private final GameManagerService gameManagerService;
-    private final PlayerService playerService;
+    private final String queueMatchMakingPath = "/queue/matchmaking";
     private final SimpMessagingTemplate messagingTemplate;
 
     private final ConcurrentMap<Long, PlayerQueueEntry> waitingPlayers = new ConcurrentHashMap<>();
@@ -65,7 +64,7 @@ public class MatchMakingServiceImpl implements MatchMakingService {
     }
 
     public void addPlayerToQueue(Long playerId) {
-        messagingTemplate.convertAndSend("/queue/matchmaking", playerId);
+        messagingTemplate.convertAndSend(queueMatchMakingPath, playerId);
 
         logger.info("Добавление пользователя в очередь игроков ММ");
         waitingPlayers.put(playerId, new PlayerQueueEntry(playerId));
@@ -138,7 +137,7 @@ public class MatchMakingServiceImpl implements MatchMakingService {
                     whitePlayerId, whitePlayerId, whiteResponse);
             messagingTemplate.convertAndSendToUser(
                     whitePlayerId.toString(),
-                    "/queue/matchmaking",
+                    queueMatchMakingPath,
                     whiteResponse
             );
             logger.info("Уведомление успешно отправлено игроку {}", whitePlayerId);
@@ -152,7 +151,7 @@ public class MatchMakingServiceImpl implements MatchMakingService {
                     blackPlayerId, blackPlayerId, blackResponse);
             messagingTemplate.convertAndSendToUser(
                     blackPlayerId.toString(),
-                    "/queue/matchmaking",
+                    queueMatchMakingPath,
                     blackResponse
             );
             logger.info("Уведомление успешно отправлено игроку {}", blackPlayerId);
@@ -162,7 +161,7 @@ public class MatchMakingServiceImpl implements MatchMakingService {
         }
 
         // Отладка: отправка на общий маршрут
-        messagingTemplate.convertAndSend("/queue/matchmaking", whiteResponse);
-        messagingTemplate.convertAndSend("/queue/matchmaking", blackResponse);
+        messagingTemplate.convertAndSend(queueMatchMakingPath, whiteResponse);
+        messagingTemplate.convertAndSend(queueMatchMakingPath, blackResponse);
     }
 }

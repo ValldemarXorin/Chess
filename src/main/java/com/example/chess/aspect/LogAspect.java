@@ -22,7 +22,9 @@ public class LogAspect {
             + "!within (com.example.chess.controller.LogController)")
     public void controllerPointcut() {}
 
-    @Pointcut("execution(public * com.example.chess.service.*.*(..))")
+    @Pointcut("execution(public * com.example.chess.service.*.*(..)) &&"
+            + "!within (com.example.chess.service.LogFileService) &&"
+            + "!within (com.example.chess.service.LogTaskService)")
     public void servicePointcut() {}
 
     @Before("controllerPointcut() || servicePointcut()")

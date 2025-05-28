@@ -2,6 +2,7 @@ package com.example.chess.controller;
 
 import com.example.chess.dto.request.PlayerFilterRequest;
 import com.example.chess.dto.request.PlayerRequest;
+import com.example.chess.dto.request.PlayerUpdateRequest;
 import com.example.chess.dto.response.GameInfoResponse;
 import com.example.chess.dto.response.PlayerResponse;
 import com.example.chess.mappers.PlayerMapper;
@@ -173,10 +174,10 @@ public class PlayerController {
         @ApiResponse(responseCode = "404", description = "Player not found")
     })
     @GetMapping("/{id}/get_friend_request")
-    public ResponseEntity<Set<PlayerResponse>> getFriendRequest(
+    public ResponseEntity<List<PlayerResponse>> getFriendRequest(
             @Parameter(description = "ID of the player", example = "1", required = true)
             @PathVariable Long id) {
-        return ResponseEntity.ok(playerService.getFriendRequests(id));
+        return ResponseEntity.ok(playerService.getFriendRequests(id).stream().toList());
     }
 
     @Operation(summary = "Remove friend", description
@@ -233,7 +234,7 @@ public class PlayerController {
                             )
                     )
             )
-            @RequestBody PlayerRequest playerRequest) {
+            @RequestBody PlayerUpdateRequest playerRequest) {
         return ResponseEntity.ok(playerService.updatePlayerById(id, playerRequest));
     }
 

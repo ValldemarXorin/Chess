@@ -3,6 +3,7 @@ package com.example.chess.controller;
 import com.example.chess.dto.request.GameInfoRequest;
 import com.example.chess.dto.response.GameInfoResponse;
 import com.example.chess.service.GameInfoService;
+import com.example.chess.service.VisitorCounter;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -12,6 +13,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
+
+import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,12 +28,10 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Game Management", description = "Endpoints for managing chess games information")
 @RestController
 @RequestMapping("/games")
+@AllArgsConstructor
 public class GameInfoController {
     private final GameInfoService gameInfoService;
-
-    public GameInfoController(GameInfoService gameInfoService) {
-        this.gameInfoService = gameInfoService;
-    }
+    private final VisitorCounter visitorCounter;
 
     @Operation(
             summary = "Create new game",
@@ -120,6 +121,7 @@ public class GameInfoController {
     })
     @GetMapping
     public ResponseEntity<List<GameInfoResponse>> getAllGames() {
+        visitorCounter.increment();
         return ResponseEntity.ok(gameInfoService.getAllGames());
     }
 

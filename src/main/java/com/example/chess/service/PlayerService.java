@@ -2,6 +2,7 @@ package com.example.chess.service;
 
 import com.example.chess.dto.request.PlayerFilterRequest;
 import com.example.chess.dto.request.PlayerRequest;
+import com.example.chess.dto.request.PlayerUpdateRequest;
 import com.example.chess.dto.response.GameInfoResponse;
 import com.example.chess.dto.response.PlayerResponse;
 import com.example.chess.entity.Player;
@@ -44,7 +45,7 @@ public interface PlayerService {
     public PlayerResponse deletePlayerById(long id)
             throws ResourceNotFoundException;
 
-    public PlayerResponse updatePlayerById(long id, PlayerRequest playerRequest)
+    public PlayerResponse updatePlayerById(long id, PlayerUpdateRequest playerRequest)
             throws ResourceNotFoundException;
 
     public Page<PlayerResponse> getPlayersByFilters(PlayerFilterRequest filter)

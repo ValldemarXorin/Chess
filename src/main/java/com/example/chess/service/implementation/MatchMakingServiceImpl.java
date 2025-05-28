@@ -6,6 +6,8 @@ import com.example.chess.repository.PlayerRepository;
 import com.example.chess.service.GameManagerService;
 import com.example.chess.service.MatchMakingService;
 import jakarta.transaction.Transactional;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -47,8 +49,9 @@ public class MatchMakingServiceImpl implements MatchMakingService {
     @Transactional
     public void processMatchmaking() {
         logger.info("Matchmaking started");
-        cleanupInactivePlayers();
+        //cleanupInactivePlayers();
         logger.info("Чистка пользователей прошла успешно");
+        logger.info("Our users: {}", userRegistry.getUsers());
 
         List<Long> activePlayerIds = getActivePlayers();
 
@@ -98,8 +101,9 @@ public class MatchMakingServiceImpl implements MatchMakingService {
 
     private List<Long> getActivePlayers() {
         long currentTime = System.currentTimeMillis();
-        return waitingPlayers.keySet().stream()
-                .filter(playerId -> isPlayerActive(playerId, currentTime)).toList();
+        return new ArrayList<>(waitingPlayers.keySet().stream()
+                .filter(playerId -> isPlayerActive(playerId, currentTime))
+                .toList());
     }
 
     @Transactional
@@ -125,6 +129,7 @@ public class MatchMakingServiceImpl implements MatchMakingService {
         logger.info("Проверка SimpUserRegistry перед отправкой...");
         SimpUser user1 = userRegistry.getUser(whitePlayerId.toString());
         SimpUser user2 = userRegistry.getUser(blackPlayerId.toString());
+        logger.info("Our users: {}", userRegistry.getUsers());
         logger.info("Пользователь {}: {}", whitePlayerId, user1 != null ? "найден, сессии: "
                 + user1.getSessions() : "не найден");
         logger.info("Пользователь {}: {}", blackPlayerId, user2 != null ? "найден, сессии: "
@@ -133,9 +138,8 @@ public class MatchMakingServiceImpl implements MatchMakingService {
         try {
             logger.info("Отправка уведомления игроку {} на /user/{}/queue/matchmaking: {}",
                     whitePlayerId, whitePlayerId, whiteResponse);
-            messagingTemplate.convertAndSendToUser(
-                    whitePlayerId.toString(),
-                    queueMatchMakingPath,
+            messagingTemplate.convertAndSend(
+                    "/topic/" + whitePlayerId + "/matchmaking",
                     whiteResponse
             );
             logger.info("Уведомление успешно отправлено игроку {}", whitePlayerId);
@@ -147,9 +151,8 @@ public class MatchMakingServiceImpl implements MatchMakingService {
         try {
             logger.info("Отправка уведомления игроку {} на /user/{}/queue/matchmaking: {}",
                     blackPlayerId, blackPlayerId, blackResponse);
-            messagingTemplate.convertAndSendToUser(
-                    blackPlayerId.toString(),
-                    queueMatchMakingPath,
+            messagingTemplate.convertAndSend(
+                    "/topic/" + blackPlayerId + "/matchmaking",
                     blackResponse
             );
             logger.info("Уведомление успешно отправлено игроку {}", blackPlayerId);
@@ -157,9 +160,5 @@ public class MatchMakingServiceImpl implements MatchMakingService {
             logger.error("Ошибка при отправке уведомления игроку {}: {}",
                     blackPlayerId, e.getMessage(), e);
         }
-
-        // Отладка: отправка на общий маршрут
-        messagingTemplate.convertAndSend(queueMatchMakingPath, whiteResponse);
-        messagingTemplate.convertAndSend(queueMatchMakingPath, blackResponse);
     }
 }

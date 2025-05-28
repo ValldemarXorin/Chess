@@ -22,7 +22,7 @@ public class VisitorCounterController {
         return counter.getCounter();
     }
 
-    @PutMapping
+    @PutMapping("/reset")
     public CompletableFuture<String> reset() {
         return counter.reset();
     }

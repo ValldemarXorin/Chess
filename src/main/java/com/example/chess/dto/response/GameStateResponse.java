@@ -10,5 +10,5 @@ import lombok.Setter;
 public class GameStateResponse {
     public Piece[][] board;
     public String status;
-    public Color currentTurnColor;
+    public String currentTurnColor;
 }

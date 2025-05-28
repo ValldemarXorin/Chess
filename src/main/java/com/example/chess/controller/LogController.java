@@ -1,5 +1,6 @@
 package com.example.chess.controller;
 
+import com.example.chess.exception.LogsException;
 import com.example.chess.service.implementation.LogTaskServiceImpl;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Pattern;
@@ -35,7 +36,11 @@ public class LogController {
 
     @GetMapping("/download")
     public List<String> getLogFile(@RequestParam String id) {
-        return logServiceImpl.getLogs(id);
+        try {
+            return logServiceImpl.getLogs(id);
+        } catch (Exception e) {
+            throw new LogsException("Файл не найден");
+        }
     }
 
 }

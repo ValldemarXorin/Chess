@@ -2,6 +2,7 @@ package com.example.chess.service.implementation;
 
 import com.example.chess.dto.request.PlayerFilterRequest;
 import com.example.chess.dto.request.PlayerRequest;
+import com.example.chess.dto.request.PlayerUpdateRequest;
 import com.example.chess.dto.response.GameInfoResponse;
 import com.example.chess.dto.response.PlayerResponse;
 import com.example.chess.entity.GameInfo;
@@ -98,9 +99,7 @@ public class PlayerServiceImpl implements PlayerService {
     @Override
     public Set<PlayerResponse> getAllFriends(Long id) throws ResourceNotFoundException {
         Set<Player> friends = playerRepository.findAllFriends(id);
-        if (friends.isEmpty()) {
-            throw new ResourceNotFoundException(playerNotFoundMsg);
-        }
+        playerRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(playerNotFoundMsg));
         return friends.stream().map(PlayerMapper::toDto).collect(Collectors.toSet());
     }
 
@@ -145,13 +144,18 @@ public class PlayerServiceImpl implements PlayerService {
         }
 
         recipient.getFriendRequests().add(sender);
+        logger.info("Sent friend request to " + recipient.getEmail());
 
-        try {
-            addFriend(senderId, recipientEmail);
-        } catch (ConflictException e) {
-            playerRepository.save(sender);
+        if (recipient.getFriendRequests().contains(sender) && sender.getFriendRequests().contains(recipient)) {
+            sender.getFriendRequests().remove(recipient);
+            recipient.getFriendRequests().remove(sender);
+            sender.getFriends().add(recipient);
+            recipient.getFriends().add(sender);
+            logger.info("Friend request added");
         }
         playerRepository.save(recipient);
+        logger.info("Sent friend request to " + recipient.getEmail());
+        playerRepository.save(sender);
         return PlayerMapper.toDto(recipient);
     }
 
@@ -177,14 +181,12 @@ public class PlayerServiceImpl implements PlayerService {
 
         Player sender = senderOpt.get();
         Player recipient = recipientOpt.get();
-        if (!recipient.getFriendRequests().contains(sender)
-                || !sender.getFriendRequests().contains(recipient)) {
-            throw new ConflictException("You are not have both requests");
-        }
         recipient.getFriendRequests().remove(sender);
         sender.getFriendRequests().remove(recipient);
         sender.getFriends().add(recipient);
         recipient.getFriends().add(sender);
+        playerRepository.save(recipient);
+        playerRepository.save(sender);
         return PlayerMapper.toDto(recipient);
     }
 
@@ -223,14 +225,14 @@ public class PlayerServiceImpl implements PlayerService {
 
     @Override
     @Transactional
-    public PlayerResponse updatePlayerById(long id, PlayerRequest playerRequest)
+    public PlayerResponse updatePlayerById(long id, PlayerUpdateRequest playerRequest)
             throws ResourceNotFoundException {
         Player player = playerRepository.findById(id).orElseThrow(()
                 -> new ResourceNotFoundException(playerNotFoundMsg));
         player.setName(playerRequest.getName());
         player.setEmail(playerRequest.getEmail());
-        player.setHashPassword(PasswordUtil.hashPassword(playerRequest.getPassword()));
         playerRepository.save(player);
+        logger.info("Player updated");
         return PlayerMapper.toDto(player);
     }
 

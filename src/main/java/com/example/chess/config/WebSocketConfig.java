@@ -43,10 +43,4 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 .setSendBufferSizeLimit(512 * 1024)    // (2) Буфер отправки
                 .setTimeToFirstMessage(30 * 1000);     // (3) Таймаут подключения
     }
-
-    @Override
-    public void configureClientInboundChannel(ChannelRegistration registration) {
-        logger.info("Регистрация CustomChannelInterceptor для входящего канала");
-        //registration.interceptors(customChannelInterceptor);
-    }
 }

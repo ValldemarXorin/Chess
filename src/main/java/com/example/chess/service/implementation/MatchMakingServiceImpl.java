@@ -25,7 +25,7 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 public class MatchMakingServiceImpl implements MatchMakingService {
     private final GameManagerService gameManagerService;
-    private static final String queueMatchMakingPath = "/queue/matchmaking";
+    private static final String QUEUE_MATCHMAKING_PATH = "/queue/matchmaking";
     private final SimpMessagingTemplate messagingTemplate;
 
     private final ConcurrentMap<Long, PlayerQueueEntry> waitingPlayers = new ConcurrentHashMap<>();
@@ -65,7 +65,7 @@ public class MatchMakingServiceImpl implements MatchMakingService {
     }
 
     public void addPlayerToQueue(Long playerId) {
-        messagingTemplate.convertAndSend(queueMatchMakingPath, playerId);
+        messagingTemplate.convertAndSend(QUEUE_MATCHMAKING_PATH, playerId);
 
         logger.info("Добавление пользователя в очередь игроков ММ");
         waitingPlayers.put(playerId, new PlayerQueueEntry(playerId));

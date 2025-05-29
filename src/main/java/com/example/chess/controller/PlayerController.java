@@ -18,6 +18,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Set;
+
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -36,6 +38,7 @@ import org.springframework.web.bind.annotation.RestController;
         = "Endpoints for managing chess players and their relationships")
 @RestController
 @RequestMapping("/players")
+@Slf4j
 public class PlayerController {
 
     private final PlayerService playerService;
@@ -295,8 +298,16 @@ public class PlayerController {
             )
             @RequestBody List<String> recipientEmails) {
 
+        // Log just the count of recipient emails instead of the actual emails
+        log.info("Processing bulk friend request from player {} to {} recipients",
+                senderId, recipientEmails.size());
+
         List<PlayerResponse> responses = playerService
                 .processBulkFriendRequests(senderId, recipientEmails);
+
+        // Log just the count of responses
+        log.debug("Completed bulk friend request processing with {} responses",
+                responses.size());
         return ResponseEntity.ok(responses);
     }
 }

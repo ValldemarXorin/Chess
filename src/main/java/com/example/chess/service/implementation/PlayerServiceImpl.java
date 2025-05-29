@@ -281,12 +281,6 @@ public class PlayerServiceImpl implements PlayerService {
 
         List<Player> requestSenders = playerRepository.findByEmailIn(requestEmails);
 
-        if (logger.isInfoEnabled()) {
-            logger.info(requestEmails.toString());
-        }
-        if (logger.isInfoEnabled()) {
-            logger.info(requestSenders.toString());
-        }
         // Проверка на отсутствующих отправителей
         if (requestSenders.size() != requestEmails.size()) {
             Set<String> foundEmails = requestSenders.stream()

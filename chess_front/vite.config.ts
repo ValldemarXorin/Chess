@@ -23,7 +23,7 @@ export default defineConfig({
     },
   },
   build: {
-    outDir: 'dist',
-    sourcemap: true,
+    outDir: '../src/main/resources/static',  // Путь относительно фронтенда
+    emptyOutDir: true,                      // Очищать папку перед билдом
   },
 });

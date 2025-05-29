@@ -5,6 +5,8 @@ export interface ChessMoveRequest {
     endX: number;
     endY: number;
     playerId: number;
+    specialMove?: 'short_castling' | 'long_castling' | 'en_passant' | 'promotion'; // Добавляем specialMove
+    promotionPiece?: PieceType; // Добавляем promotionPiece
 }
 
 export interface GameInfoRequest {
@@ -47,9 +49,10 @@ export interface GameInfoResponse {
 }
 
 export interface GameStateResponse {
-    board: Piece[][];
+    board: (Piece | null)[][];
     status: string;
     currentTurnColor: string;
+    lastMove?: ChessMove;
 }
 
 export interface MatchFoundResponse {
@@ -118,6 +121,7 @@ export interface GameState {
     gameHistory: ChessMove[];
     isMyTurn: boolean;
     myColor: PieceColor | null;
+    lastMove: ChessMove | null; // Добавляем lastMove
 }
 
 export interface FriendRequest {

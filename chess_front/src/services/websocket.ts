@@ -12,7 +12,6 @@ class WebSocketService {
 
     private matchmakingCallback: ((response: MatchFoundResponse) => void) | null = null;
 
-    // Явно устанавливаем callback для matchmaking
     setMatchmakingCallback(callback: (response: MatchFoundResponse) => void): void {
         this.matchmakingCallback = callback;
     }
@@ -35,13 +34,15 @@ class WebSocketService {
                     heartbeatIncoming: 4000,
                     heartbeatOutgoing: 4000,
                     onConnect: (frame) => {
-                        console.log('WebSocket connected:', frame, userId, this.client?.connectHeaders.user);
+                        console.log('WebSocket connected:', frame);
                         this.isConnected = true;
                         this.reconnectAttempts = 0;
 
                         this.subscribeToMatchmaking(userId, (response) => {
                             console.log('Match found:', response);
-
+                            if (this.matchmakingCallback) {
+                                this.matchmakingCallback(response);
+                            }
                         });
 
                         resolve();
@@ -97,39 +98,55 @@ class WebSocketService {
         this.isConnected = false;
     }
 
-    subscribeToGameMoves(gameId: number, callback: (gameState: GameStateResponse) => void): void {
+    subscribeToGameMoves(gameId: number, callback: (move: ChessMoveRequest) => void): void {
         if (!this.isConnected || !this.client) {
-            console.error('WebSocket not connected');
+            console.error('WebSocket не подключен');
             return;
         }
-
-        const destination = `/game/${gameId}/move`;
+        const destination = `/topic/game/${gameId}/move`;
+        console.log(`Подписка на ${destination} для игры ${gameId}`);
         const subscription = this.client.subscribe(destination, (message: IMessage) => {
+            console.log(`Получено сообщение для игры ${gameId}:`, message.body);
             try {
-                const gameState: GameStateResponse = JSON.parse(message.body);
-                callback(gameState);
+                const move: ChessMoveRequest = JSON.parse(message.body);
+                callback(move);
             } catch (error) {
-                console.error('Error parsing game state:', error);
+                console.error('Ошибка парсинга хода:', error);
             }
         });
-
         this.subscriptions.set(`game-${gameId}`, subscription);
-        console.log(`Subscribed to game moves for game ${gameId}`);
+    }
+
+    subscribeToGameState(gameId: number, callback: (state: GameStateResponse) => void): void {
+        if (!this.isConnected || !this.client) {
+            console.error('WebSocket не подключен');
+            return;
+        }
+        const destination = `/topic/game/${gameId}/state`;
+        console.log(`Подписка на ${destination} для игры ${gameId}`);
+        const subscription = this.client.subscribe(destination, (message: IMessage) => {
+            console.log(`Получено состояние игры ${gameId}:`, message.body);
+            try {
+                const state: GameStateResponse = JSON.parse(message.body);
+                callback(state);
+            } catch (error) {
+                console.error('Ошибка парсинга состояния игры:', error);
+            }
+        });
+        this.subscriptions.set(`state-${gameId}`, subscription);
     }
 
     sendChessMove(gameId: number, move: ChessMoveRequest): void {
         if (!this.isConnected || !this.client) {
-            console.error('WebSocket not connected');
+            console.error('WebSocket не подключен');
             return;
         }
-
         const destination = `/app/game/${gameId}/move`;
+        console.log(`Отправка хода на ${destination}:`, move);
         this.client.publish({
             destination,
             body: JSON.stringify(move)
         });
-
-        console.log('Sent chess move:', move);
     }
 
     joinMatchmakingPool(playerId: number): void {
@@ -154,14 +171,12 @@ class WebSocketService {
         }
 
         const userDestination = `/topic/${playerId}/matchmaking`;
-
-        // Всегда отписываемся перед новой подпиской
         this.unsubscribe(`matchmaking-user-${playerId}`);
 
         const subscription = this.client.subscribe(userDestination, (message: IMessage) => {
             try {
                 const matchResponse: MatchFoundResponse = JSON.parse(message.body);
-                callback(matchResponse); // Теперь callback вызовется гарантированно
+                callback(matchResponse);
             } catch (error) {
                 console.error('Error parsing match found response:', error);
             }
@@ -177,7 +192,7 @@ class WebSocketService {
             return;
         }
 
-        const destination = '/topic/onlineStatus'; // Унифицировано с бэкендом
+        const destination = '/topic/onlineStatus';
         const subscription = this.client.subscribe(destination, (message: IMessage) => {
             try {
                 const status: OnlineStatus = JSON.parse(message.body);
@@ -189,26 +204,6 @@ class WebSocketService {
 
         this.subscriptions.set('online-status', subscription);
         console.log('Subscribed to online status updates');
-    }
-
-    subscribeToUserNotifications(playerId: number, callback: (notification: any) => void): void {
-        if (!this.isConnected || !this.client) {
-            console.error('WebSocket not connected');
-            return;
-        }
-
-        const destination = `/user/${playerId}/queue/notifications`;
-        const subscription = this.client.subscribe(destination, (message: IMessage) => {
-            try {
-                const notification = JSON.parse(message.body);
-                callback(notification);
-            } catch (error) {
-                console.error('Error parsing notification:', error);
-            }
-        });
-
-        this.subscriptions.set(`notifications-${playerId}`, subscription);
-        console.log('Subscribed to notifications for player:', playerId);
     }
 
     unsubscribe(key: string): void {

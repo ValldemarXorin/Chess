@@ -9,6 +9,14 @@ interface ChessBoardProps {
 const ChessBoard: React.FC<ChessBoardProps> = ({ onSquareClick }) => {
     const { board, selectedSquare, possibleMoves, myColor } = useGame();
 
+    // Проверка валидности board
+    if (!board || !Array.isArray(board) || board.length !== 8 || !board.every(row => Array.isArray(row) && row.length === 8)) {
+        console.error('Некорректное состояние доски:', board);
+        return <div className="text-red-500">Ошибка: доска не загружена</div>;
+    }
+
+    console.log('Рендеринг доски:', JSON.stringify(board));
+
     // Chess piece Unicode symbols
     const pieceSymbols: Record<PieceColor, Record<PieceType, string>> = {
         [PieceColor.WHITE]: {
@@ -30,73 +38,86 @@ const ChessBoard: React.FC<ChessBoardProps> = ({ onSquareClick }) => {
     };
 
     const renderPiece = (piece: Piece | null): React.ReactNode => {
-        if (!piece) return null;
-
-        return (
-            <div className="chess-piece animate-fade-in-up">
-                {pieceSymbols[piece.color][piece.type]}
-            </div>
-        );
-    };
-
-    const isSquareHighlighted = (x: number, y: number): boolean => {
-        return selectedSquare?.x === x && selectedSquare?.y === y;
-    };
-
-    const isSquarePossibleMove = (x: number, y: number): boolean => {
-        return possibleMoves.some(move => move.x === x && move.y === y);
-    };
-
-    const getSquareClasses = (x: number, y: number): string => {
-        let classes = 'chess-square ';
-
-        // Light or dark square
-        classes += (x + y) % 2 === 0 ? 'light ' : 'dark ';
-
-        // Highlighted square
-        if (isSquareHighlighted(x, y)) {
-            classes += 'highlighted ';
+        if (!piece || !piece.color || !piece.type) {
+            return null;
         }
 
-        // Possible move
-        if (isSquarePossibleMove(x, y)) {
-            classes += 'possible-move ';
+        try {
+            const symbol = pieceSymbols[piece.color][piece.type];
+            return (
+                <div className="chess-piece animate-fade-in-up">
+                    {symbol}
+                </div>
+            );
+        } catch (error) {
+            console.error('Ошибка рендеринга фигуры:', piece, error);
+            return null;
         }
-
-        return classes;
     };
 
-    // Flip board if playing as black
     const shouldFlipBoard = myColor === PieceColor.BLACK;
+
+    const isSquareHighlighted = (boardX: number, boardY: number): boolean => {
+        return selectedSquare?.x === boardX && selectedSquare?.y === boardY;
+    };
+
+    const isSquarePossibleMove = (boardX: number, boardY: number): boolean => {
+        return possibleMoves.some(move => move.x === boardX && move.y === boardY);
+    };
+
+    const getSquareClasses = (boardX: number, boardY: number, displayX: number, displayY: number): string => {
+        const classes = [
+            'chess-square',
+            (displayX + displayY) % 2 === 0 ? 'light' : 'dark',
+            isSquareHighlighted(boardX, boardY) ? 'highlighted' : '',
+            isSquarePossibleMove(boardX, boardY) ? 'possible-move' : '',
+        ];
+        return classes.filter(cls => cls).join(' ');
+    };
 
     const renderBoard = () => {
         const rows = [];
 
-        for (let y = 0; y < 8; y++) {
+        // Для черных переворачиваем порядок строк и столбцов
+        const startY = shouldFlipBoard ? 7 : 0;
+        const endY = shouldFlipBoard ? -1 : 8;
+        const stepY = shouldFlipBoard ? -1 : 1;
+        const startX = shouldFlipBoard ? 7 : 0;
+        const endX = shouldFlipBoard ? -1 : 8;
+        const stepX = shouldFlipBoard ? -1 : 1;
+
+        for (let y = startY; y !== endY; y += stepY) {
             const cols = [];
 
-            for (let x = 0; x < 8; x++) {
-                const displayY = shouldFlipBoard ? 7 - y : y;
+            for (let x = startX; x !== endX; x += stepX) {
+                // Координаты для отображения (нужны только для нумерации и цвета клеток)
                 const displayX = shouldFlipBoard ? 7 - x : x;
-                const piece = board[displayY]?.[displayX];
+                const displayY = shouldFlipBoard ? 7 - y : y;
+                // Координаты для данных доски
+                const boardX = x;
+                const boardY = y;
+                const piece = board[boardY]?.[boardX];
 
                 cols.push(
                     <div
-                        key={`${displayX}-${displayY}`}
-                        className={getSquareClasses(displayX, displayY)}
-                        onClick={() => onSquareClick({ x: displayX, y: displayY })}
+                        key={`${boardX}-${boardY}`}
+                        className={getSquareClasses(boardX, boardY, displayX, displayY)}
+                        onClick={() => {
+                            console.log(`Clicked: display(${displayX},${displayY}), board(${boardX},${boardY})`);
+                            onSquareClick({ x: boardX, y: boardY });
+                        }}
                     >
                         {renderPiece(piece)}
 
                         {/* Coordinate labels */}
-                        {displayY === (shouldFlipBoard ? 0 : 7) && (
+                        {boardY === (shouldFlipBoard ? 0 : 7) && (
                             <div className="absolute bottom-1 right-1 text-xs opacity-60">
-                                {String.fromCharCode(97 + displayX)}
+                                {String.fromCharCode(97 + (shouldFlipBoard ? 7 - boardX : boardX))}
                             </div>
                         )}
-                        {displayX === (shouldFlipBoard ? 7 : 0) && (
+                        {boardX === (shouldFlipBoard ? 0 : 7) && (
                             <div className="absolute top-1 left-1 text-xs opacity-60">
-                                {shouldFlipBoard ? displayY + 1 : 8 - displayY}
+                                {shouldFlipBoard ? 8 - boardY : boardY + 1}
                             </div>
                         )}
                     </div>
@@ -113,32 +134,37 @@ const ChessBoard: React.FC<ChessBoardProps> = ({ onSquareClick }) => {
         return rows;
     };
 
-    return (
-        <div className="relative">
-            <div className="inline-block border-4 border-chess-gold rounded-lg overflow-hidden shadow-2xl animate-board-glow">
-                <div className="grid grid-rows-8 w-96 h-96 md:w-[500px] md:h-[500px]">
-                    {renderBoard()}
+    try {
+        return (
+            <div className="relative">
+                <div className="inline-block border-4 border-chess-gold rounded-lg overflow-hidden shadow-2xl animate-board-glow">
+                    <div className="grid grid-rows-8 w-96 h-96 md:w-[500px] md:h-[500px]">
+                        {renderBoard()}
+                    </div>
+                </div>
+
+                {/* Board coordinates */}
+                <div className="absolute -bottom-8 left-0 right-0 flex justify-around text-chess-gold text-sm font-semibold">
+                    {Array.from({ length: 8 }, (_, i) => (
+                        <span key={i}>
+                            {String.fromCharCode(97 + (shouldFlipBoard ? 7 - i : i))}
+                        </span>
+                    ))}
+                </div>
+
+                <div className="absolute -left-8 top-0 bottom-0 flex flex-col justify-around text-chess-gold text-sm font-semibold">
+                    {Array.from({ length: 8 }, (_, i) => (
+                        <span key={i}>
+                            {shouldFlipBoard ? i + 1 : 8 - i}
+                        </span>
+                    ))}
                 </div>
             </div>
-
-            {/* Board coordinates */}
-            <div className="absolute -bottom-8 left-0 right-0 flex justify-around text-chess-gold text-sm font-semibold">
-                {Array.from({ length: 8 }, (_, i) => (
-                    <span key={i}>
-            {String.fromCharCode(97 + (shouldFlipBoard ? 7 - i : i))}
-          </span>
-                ))}
-            </div>
-
-            <div className="absolute -left-8 top-0 bottom-0 flex flex-col justify-around text-chess-gold text-sm font-semibold">
-                {Array.from({ length: 8 }, (_, i) => (
-                    <span key={i}>
-            {shouldFlipBoard ? i + 1 : 8 - i}
-          </span>
-                ))}
-            </div>
-        </div>
-    );
+        );
+    } catch (error) {
+        console.error('Ошибка рендеринга ChessBoard:', error);
+        return <div className="text-red-500">Ошибка отображения доски</div>;
+    }
 };
 
 export default ChessBoard;

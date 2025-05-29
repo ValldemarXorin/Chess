@@ -25,7 +25,7 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 public class MatchMakingServiceImpl implements MatchMakingService {
     private final GameManagerService gameManagerService;
-    private final String queueMatchMakingPath = "/queue/matchmaking";
+    private static final String queueMatchMakingPath = "/queue/matchmaking";
     private final SimpMessagingTemplate messagingTemplate;
 
     private final ConcurrentMap<Long, PlayerQueueEntry> waitingPlayers = new ConcurrentHashMap<>();
@@ -49,7 +49,6 @@ public class MatchMakingServiceImpl implements MatchMakingService {
     @Transactional
     public void processMatchmaking() {
         logger.info("Matchmaking started");
-        //cleanupInactivePlayers();
         logger.info("Чистка пользователей прошла успешно");
         logger.info("Our users: {}", userRegistry.getUsers());
 
@@ -81,17 +80,6 @@ public class MatchMakingServiceImpl implements MatchMakingService {
 
     public void updatePlayerActivity(Long playerId) {
         lastPingTimes.put(playerId, System.currentTimeMillis());
-    }
-
-    private void cleanupInactivePlayers() {
-        long currentTime = System.currentTimeMillis();
-
-        logger.info("Удаление инактивных игроков с ключами {}", waitingPlayers.keySet());
-        waitingPlayers.keySet().removeIf(playerId ->
-                !isPlayerActive(playerId, currentTime)
-        );
-        logger.info("Удаление инактивных игроков завершено. Оставшиеся ключи {}",
-                waitingPlayers.keySet());
     }
 
     private boolean isPlayerActive(Long playerId, long currentTime) {

@@ -36,7 +36,7 @@ import org.springframework.web.server.ResponseStatusException;
 public class PlayerServiceImpl implements PlayerService {
     private final PlayerRepository playerRepository;
     private final Logger logger = LoggerFactory.getLogger(PlayerServiceImpl.class);
-    private final String playerNotFoundMsg = "Player not found";
+    private static final String playerNotFoundMsg = "Player not found";
 
     public PlayerServiceImpl(PlayerRepository playerRepository) {
         this.playerRepository = playerRepository;

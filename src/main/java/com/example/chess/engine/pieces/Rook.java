@@ -39,12 +39,6 @@ public class Rook extends Piece {
             directionY = directionY > 0 ? 1 : -1;
         }
 
-        for (int i = this.getCoordX() + directionX; i <= endX; i += directionX) {
-            if (board.getPieceAt(i, this.getCoordY()) != null) {
-                return false;
-            }
-        }
-
         for (int j = this.getCoordY() + directionY; j <= endY; j += directionY) {
             if (board.getPieceAt(this.getCoordX(), j) != null) {
                 return false;

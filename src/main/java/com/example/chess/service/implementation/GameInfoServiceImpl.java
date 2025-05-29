@@ -65,8 +65,6 @@ public class GameInfoServiceImpl implements GameInfoService {
     @Override
     @Transactional
     public GameInfoResponse updateGame(Long id, GameInfoRequest gameInfoDto) {
-        GameInfo existingGame = getCachedGameInfo(id);
-
         GameInfo updatedGame = GameInfoMapper.toEntity(gameInfoDto, playerRepository);
         updatedGame.setId(id);
 

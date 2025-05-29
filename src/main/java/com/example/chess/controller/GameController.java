@@ -14,9 +14,6 @@ public class GameController {
     @MessageMapping("/game/{gameId}/move")
     @SendTo("/topic/game/{gameId}/move")
     public ChessMoveRequest forwardMove(@DestinationVariable String gameId, @Payload ChessMoveRequest move) {
-        // Логирование для отладки
-        System.out.println("Received move for game " + gameId + ": " + move);
-        // Просто возвращаем полученный ход для рассылки всем подписчикам
         return move;
     }
 }

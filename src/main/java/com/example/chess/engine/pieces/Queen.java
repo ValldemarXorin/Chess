@@ -19,8 +19,8 @@ public class Queen extends Piece {
         // For Queen's movement (horizontal, vertical, or diagonal)
         if (!(endX - this.getCoordX() == 0 && endY - this.getCoordY() != 0)  // vertical
                 && !(endX - this.getCoordX() != 0 && endY - this.getCoordY() == 0)  // horizontal
-                && !(Math.abs(endX - this.getCoordX())
-                == Math.abs(endY - this.getCoordY()))) {
+                && Math.abs(endX - this.getCoordX())
+                != Math.abs(endY - this.getCoordY())) {
             return false;
         }
 
